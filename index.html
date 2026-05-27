@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부부 자산 관리 시뮬레이터 v8 (Master Edition)</title>
+    <title>부부 자산 관리 시뮬레이터 v8.1 (Master Edition)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
@@ -22,11 +22,9 @@
         .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; color: #fff; }
         
-        /* 공통 인풋 스타일 */
         input, select { background: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.9rem; }
         input:focus, select:focus { outline: none; border-color: var(--primary-color); }
         
-        /* 설정 테이블 요소 */
         .section-block { margin-bottom: 24px; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .section-subtitle { font-size: 0.95rem; color: var(--plus-color); font-weight: 600; }
@@ -36,7 +34,6 @@
         .item-row input.item-val { width: 130px; text-align: right; }
         .btn-del { background: transparent; color: var(--minus-color); border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; }
         
-        /* 대시보드 2단 요약 그리드 */
         .summary-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         @media (min-width: 768px) { .summary-box { grid-template-columns: repeat(3, 1fr); } }
         .summary-card { background: #111827; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; display: flex; flex-direction: column; justify-content: center;}
@@ -54,7 +51,6 @@
         .total-row { font-weight: bold; background-color: rgba(99, 102, 241, 0.1); }
         .total-row td { border-bottom: 2px solid var(--primary-color); }
 
-        /* 클라우드 패널 */
         .github-wrapper { background: rgba(139, 92, 246, 0.05); padding: 16px; border-radius: 8px; border: 1px solid var(--git-color); margin-bottom: 20px; }
         .pin-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); }
         .pin-input { width: 80px; text-align: center; font-size: 1.2rem; letter-spacing: 4px; font-weight: bold; color: var(--git-color); border-color: var(--git-color); }
@@ -70,7 +66,7 @@
 
 <div class="container">
     <div class="header-area">
-        <h1>부부 자산 관리 시뮬레이터 v8</h1>
+        <h1>부부 자산 관리 시뮬레이터 v8.1</h1>
     </div>
 
     <div class="layout">
@@ -121,9 +117,9 @@
                     <div class="sub-value" id="dash-pouch-w-sub">공금 0 + 개인 0</div>
                 </div>
                 <div class="summary-card" style="border-left: 4px solid #14b8a6;">
-                    <div class="label">공금 및 용돈 배분액</div>
-                    <div class="value" id="dash-variable">₩0</div>
-                    <div class="sub-value">4. 공금/용돈 항목 합계</div>
+                    <div class="label">공금 배분액</div>
+                    <div class="value" id="dash-variable" style="color: #14b8a6;">₩0</div>
+                    <div class="sub-value">순수 공금 항목</div>
                 </div>
 
                 <div class="summary-card" style="border-left: 4px solid var(--minus-color);">
@@ -246,9 +242,9 @@
         if (cachedCloudPresets[selectedName]) {
             state = cachedCloudPresets[selectedName];
             
-            // v8 마이그레이션 방어코드 적용
-            if(!state.loan || !state.savings) {
-                alert("선택하신 프리셋은 이전 버전(v7 이하) 포맷입니다.\n원활한 사용을 위해 새 포맷으로 덮어씌워 렌더링합니다.");
+            // v8 렌더링 방어코드
+            if(!state.loan || !state.savings || !state.fixed) {
+                alert("선택하신 프리셋은 이전 버전(v7 이하) 포맷입니다.\n새 포맷(v8) 디폴트 값으로 덮어씌워 렌더링합니다.");
                 state = JSON.parse(JSON.stringify(systemDefaultData));
             }
 
@@ -286,10 +282,6 @@
         } catch (err) { setStatus(err.message, true); }
     }
 
-
-    /* ====================================================================
-       🌟 [v8 최종 카테고리 구성 (이미지 완벽 매핑)] 
-       ==================================================================== */
     const systemDefaultData = {
         income: { title: "1. 소득 및 기초 각출 설정", canAdd: false, items: [
             { id: "h_salary", name: "남편 월급", value: 4100000, isCore: true }, { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
@@ -321,10 +313,16 @@
         if (saved) { 
             try { 
                 state = JSON.parse(saved); 
-                // 이전 버전 호환성 강제 덮어쓰기 로직
-                if(!state.loan || !state.savings) throw new Error("Old Version");
-            } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); } 
-        } else { state = JSON.parse(JSON.stringify(systemDefaultData)); }
+                // 빈 화면 렌더링 방어 로직 (데이터 구조 깨짐 방지)
+                if(!state.income || !state.income.items || !state.loan || !state.loan.items) {
+                    throw new Error("Corrupt Data");
+                }
+            } catch (e) { 
+                state = JSON.parse(JSON.stringify(systemDefaultData)); 
+            } 
+        } else { 
+            state = JSON.parse(JSON.stringify(systemDefaultData)); 
+        }
         
         renderInputs(); calculate();
     }
@@ -376,7 +374,6 @@
     function calculate() {
         const getItemVal = (cat, id) => { const target = state[cat].items.find(i => i.id === id); return target ? target.value : 0; };
         
-        // 1. 소득 및 잔액 분석
         const hSalary = getItemVal('income', 'h_salary');
         const wSalary = getItemVal('income', 'w_salary');
         const hBase = getItemVal('income', 'h_base'); 
@@ -384,21 +381,16 @@
         const extraRatio = getItemVal('income', 'extra_ratio') / 100;
         
         const totalBaseResource = hBase + wBase;
-        
-        // 각출 후 남은 개인별 잉여금
         const hRemainder = Math.max(0, hSalary - hBase);
         const wRemainder = Math.max(0, wSalary - wBase);
         
-        // 공금으로 보내는 추가 각출 금액
         const hExtraToJoint = hRemainder * extraRatio;
         const wExtraToJoint = wRemainder * extraRatio;
         const totalExtraResource = hExtraToJoint + wExtraToJoint; 
         
-        // 각자의 통장에 남은 최종 개인 잉여 자금
         const hPersonalRetained = hRemainder - hExtraToJoint;
         const wPersonalRetained = wRemainder - wExtraToJoint;
 
-        // 🌟 내 용돈 계산: (통장에 남은 돈) + (공금비에서 할당받는 용돈)
         const jointPouchH = getItemVal('variable', 'pouch_h');
         const jointPouchW = getItemVal('variable', 'pouch_w');
         
@@ -411,24 +403,27 @@
         // 대주제별 금액 합산 계산
         let sumLoan = 0; state.loan.items.forEach(i => sumLoan += i.value);
         let sumFixed = 0; state.fixed.items.forEach(i => sumFixed += i.value);
-        let sumVariable = 0; state.variable.items.forEach(i => sumVariable += i.value);
+        
+        // 공금 배분액 (부부 용돈 제외한 '공금 비용' 단일 항목만 표시)
+        const publicFeeOnly = getItemVal('variable', 'public_fee');
+        
         let sumSavingsInputs = 0; state.savings.items.forEach(i => sumSavingsInputs += i.value);
+        let sumVariable = 0; state.variable.items.forEach(i => sumVariable += i.value);
 
-        // 파킹 자동 계산 (모든 기초비용 차감 후 남은 잉여 예비비 + 추가 각출금)
         const baseRemainder = totalBaseResource - (sumLoan + sumFixed + sumVariable + sumSavingsInputs);
         const autoParking = baseRemainder + totalExtraResource;
 
         // 대시보드 2열 렌더링
         document.getElementById('dash-loan').textContent = formatKRW(sumLoan);
         document.getElementById('dash-fixed').textContent = formatKRW(sumFixed);
-        document.getElementById('dash-variable').textContent = formatKRW(sumVariable);
+        
+        // v8.1 업데이트: 공금 배분액 카드 변경
+        document.getElementById('dash-variable').textContent = formatKRW(publicFeeOnly);
         
         document.getElementById('dash-savings').textContent = formatKRW(sumSavingsInputs + autoParking);
         document.getElementById('dash-savings-sub').textContent = `입력 ${formatKRW(sumSavingsInputs)} + 자동파킹 ${formatKRW(autoParking)}`;
 
-        // ------------------
         // 결산 테이블 흐름 빌드
-        // ------------------
         let cumulative = 0; 
         const tbody = document.getElementById('result-tbody'); tbody.innerHTML = "";
         
@@ -438,7 +433,6 @@
         ];
         initialFlows.forEach(item => { cumulative += item.amt; appendTableRow(item.name, item.desc, item.amt, item.type, cumulative); });
 
-        // 2, 4, 5, 3 순서로 차감 (대출 -> 고정비 -> 생활비 -> 기본저축 순)
         ['loan', 'fixed', 'variable', 'savings'].forEach(catKey => {
             state[catKey].items.forEach(item => {
                 if (item.value > 0) { 
@@ -448,11 +442,9 @@
             });
         });
 
-        // 마지막 결산: 남은 잉여액을 파킹으로 0원 맞춤
-        const parkingType = autoParking >= 0 ? "minus" : "plus"; // 적자일 경우도 수식상 호환되도록 방어코드
+        const parkingType = autoParking >= 0 ? "minus" : "plus"; 
         appendTableRow("파킹 추가 (자동 통합 저축)", "최종 잉여 예비비 + 추가 각출액 일괄 이체", -autoParking, parkingType, cumulative - autoParking);
 
-        // 잔액은 항상 0으로 수렴해야 함 (Zero-sum)
         const totalTr = document.createElement('tr'); totalTr.className = "total-row";
         totalTr.innerHTML = `<td><div><strong>가계 결산 잔액 (Zero-Sum)</strong></div></td><td></td><td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">₩0</td>`;
         tbody.appendChild(totalTr);
