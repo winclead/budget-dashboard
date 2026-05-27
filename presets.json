@@ -7,25 +7,25 @@
         {
           "id": "h_salary",
           "name": "남편 월급",
-          "value": 4100000,
+          "value": 4250000,
           "isCore": true
         },
         {
           "id": "w_salary",
           "name": "아내 월급",
-          "value": 4500000,
+          "value": 4800000,
           "isCore": true
         },
         {
           "id": "h_base",
           "name": "남편 기초 각출",
-          "value": 4000000,
+          "value": 4200000,
           "isCore": true
         },
         {
           "id": "w_base",
           "name": "아내 기초 각출",
-          "value": 4200000,
+          "value": 4700000,
           "isCore": true
         },
         {
@@ -65,7 +65,7 @@
         {
           "id": "invest",
           "name": "투자 재원",
-          "value": 1000000
+          "value": 1500000
         },
         {
           "id": "saving_m",
@@ -137,7 +137,155 @@
         {
           "id": "pouch_w",
           "name": "아내 공금 용돈",
-          "value": 600000
+          "value": 650000
+        },
+        {
+          "id": "pouch_h",
+          "name": "남편 공금 용돈",
+          "value": 500000
+        }
+      ]
+    }
+  },
+  "2안(425/470)": {
+    "income": {
+      "title": "1. 소득 및 기초 각출 설정",
+      "canAdd": false,
+      "items": [
+        {
+          "id": "h_salary",
+          "name": "남편 월급",
+          "value": 4250000,
+          "isCore": true
+        },
+        {
+          "id": "w_salary",
+          "name": "아내 월급",
+          "value": 4800000,
+          "isCore": true
+        },
+        {
+          "id": "h_base",
+          "name": "남편 기초 각출",
+          "value": 4200000,
+          "isCore": true
+        },
+        {
+          "id": "w_base",
+          "name": "아내 기초 각출",
+          "value": 4700000,
+          "isCore": true
+        },
+        {
+          "id": "extra_ratio",
+          "name": "잔액 각출 비율 (%)",
+          "value": 50,
+          "isCore": true,
+          "isPercent": true
+        }
+      ]
+    },
+    "loan": {
+      "title": "2. 대출 상환",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "loan_h",
+          "name": "우리은행 주담대",
+          "value": 2520000
+        },
+        {
+          "id": "loan_w",
+          "name": "새마을금고 대출",
+          "value": 240000
+        },
+        {
+          "id": "add_loan",
+          "name": "대출 추가 상환",
+          "value": 1000000
+        }
+      ]
+    },
+    "savings": {
+      "title": "3. 저축 및 투자",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "invest",
+          "name": "투자 재원",
+          "value": 1500000
+        },
+        {
+          "id": "saving_m",
+          "name": "장모님용 적금",
+          "value": 300000
+        },
+        {
+          "id": "travel",
+          "name": "여행비 저축",
+          "value": 500000
+        },
+        {
+          "id": "congrat",
+          "name": "경조사비",
+          "value": 200000
+        },
+        {
+          "id": "parking_base",
+          "name": "파킹 기본",
+          "value": 200000
+        }
+      ]
+    },
+    "fixed": {
+      "title": "4. 고정 지출 및 구독료",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "manage",
+          "name": "관리비 상정액",
+          "value": 320000
+        },
+        {
+          "id": "sub_tv",
+          "name": "TV/인터넷",
+          "value": 40980
+        },
+        {
+          "id": "sub_gemini",
+          "name": "제미나이 AI",
+          "value": 29000
+        },
+        {
+          "id": "sub_youtube",
+          "name": "유튜브 프리미엄",
+          "value": 11000
+        },
+        {
+          "id": "sub_naver",
+          "name": "네이버 플러스",
+          "value": 4900
+        },
+        {
+          "id": "sub_coupang",
+          "name": "쿠팡 와우",
+          "value": 7890
+        }
+      ]
+    },
+    "variable": {
+      "title": "5. 공금 및 부부 용돈",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "public_fee",
+          "name": "공금 비용",
+          "value": 700000
+        },
+        {
+          "id": "pouch_w",
+          "name": "아내 공금 용돈",
+          "value": 650000
         },
         {
           "id": "pouch_h",
