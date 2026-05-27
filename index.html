@@ -358,4 +358,113 @@
             }
             block.appendChild(header);
             catData.items.forEach(item => {
-                const row = document.createElement('
+                const row = document.createElement('div'); row.className = "item-row";
+                const nameInput = document.createElement('input'); nameInput.type = "text"; nameInput.className = "item-name";
+                nameInput.value = item.name; nameInput.disabled = item.isCore; nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
+                const valInput = document.createElement('input'); valInput.type = "text"; valInput.className = "item-val";
+                valInput.value = item.isPercent ? item.value : item.value.toLocaleString(); valInput.oninput = () => handleValueUpdate(catKey, item.id, valInput, item.isPercent);
+                row.appendChild(nameInput); row.appendChild(valInput);
+                if (!item.isCore) {
+                    const delBtn = document.createElement('button'); delBtn.className = "btn-del"; delBtn.innerHTML = "✕"; delBtn.onclick = () => deleteItem(catKey, item.id); row.appendChild(delBtn);
+                } else { const spacer = document.createElement('div'); spacer.style.width = '28px'; row.appendChild(spacer); }
+                block.appendChild(row);
+            });
+            container.appendChild(block);
+        }
+    }
+
+    function calculate() {
+        const getItemVal = (cat, id) => { const target = state[cat].items.find(i => i.id === id); return target ? target.value : 0; };
+        
+        // 1. 소득 및 잔액 분석
+        const hSalary = getItemVal('income', 'h_salary');
+        const wSalary = getItemVal('income', 'w_salary');
+        const hBase = getItemVal('income', 'h_base'); 
+        const wBase = getItemVal('income', 'w_base');
+        const extraRatio = getItemVal('income', 'extra_ratio') / 100;
+        
+        const totalBaseResource = hBase + wBase;
+        
+        // 각출 후 남은 개인별 잉여금
+        const hRemainder = Math.max(0, hSalary - hBase);
+        const wRemainder = Math.max(0, wSalary - wBase);
+        
+        // 공금으로 보내는 추가 각출 금액
+        const hExtraToJoint = hRemainder * extraRatio;
+        const wExtraToJoint = wRemainder * extraRatio;
+        const totalExtraResource = hExtraToJoint + wExtraToJoint; 
+        
+        // 각자의 통장에 남은 최종 개인 잉여 자금
+        const hPersonalRetained = hRemainder - hExtraToJoint;
+        const wPersonalRetained = wRemainder - wExtraToJoint;
+
+        // 🌟 내 용돈 계산: (통장에 남은 돈) + (공금비에서 할당받는 용돈)
+        const jointPouchH = getItemVal('variable', 'pouch_h');
+        const jointPouchW = getItemVal('variable', 'pouch_w');
+        
+        document.getElementById('dash-pouch-h').textContent = formatKRW(hPersonalRetained + jointPouchH);
+        document.getElementById('dash-pouch-h-sub').textContent = `공금 ${formatKRW(jointPouchH)} + 개인 ${formatKRW(hPersonalRetained)}`;
+        
+        document.getElementById('dash-pouch-w').textContent = formatKRW(wPersonalRetained + jointPouchW);
+        document.getElementById('dash-pouch-w-sub').textContent = `공금 ${formatKRW(jointPouchW)} + 개인 ${formatKRW(wPersonalRetained)}`;
+
+        // 대주제별 금액 합산 계산
+        let sumLoan = 0; state.loan.items.forEach(i => sumLoan += i.value);
+        let sumFixed = 0; state.fixed.items.forEach(i => sumFixed += i.value);
+        let sumVariable = 0; state.variable.items.forEach(i => sumVariable += i.value);
+        let sumSavingsInputs = 0; state.savings.items.forEach(i => sumSavingsInputs += i.value);
+
+        // 파킹 자동 계산 (모든 기초비용 차감 후 남은 잉여 예비비 + 추가 각출금)
+        const baseRemainder = totalBaseResource - (sumLoan + sumFixed + sumVariable + sumSavingsInputs);
+        const autoParking = baseRemainder + totalExtraResource;
+
+        // 대시보드 2열 렌더링
+        document.getElementById('dash-loan').textContent = formatKRW(sumLoan);
+        document.getElementById('dash-fixed').textContent = formatKRW(sumFixed);
+        document.getElementById('dash-variable').textContent = formatKRW(sumVariable);
+        
+        document.getElementById('dash-savings').textContent = formatKRW(sumSavingsInputs + autoParking);
+        document.getElementById('dash-savings-sub').textContent = `입력 ${formatKRW(sumSavingsInputs)} + 자동파킹 ${formatKRW(autoParking)}`;
+
+        // ------------------
+        // 결산 테이블 흐름 빌드
+        // ------------------
+        let cumulative = 0; 
+        const tbody = document.getElementById('result-tbody'); tbody.innerHTML = "";
+        
+        const initialFlows = [
+            { name: "일정 금액 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `의현 기초(${formatKRW(hBase)}) + 원영 기초(${formatKRW(wBase)})` },
+            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `의현 추가(${formatKRW(hExtraToJoint)}) + 원영 추가(${formatKRW(wExtraToJoint)})` }
+        ];
+        initialFlows.forEach(item => { cumulative += item.amt; appendTableRow(item.name, item.desc, item.amt, item.type, cumulative); });
+
+        // 2, 4, 5, 3 순서로 차감 (대출 -> 고정비 -> 생활비 -> 기본저축 순)
+        ['loan', 'fixed', 'variable', 'savings'].forEach(catKey => {
+            state[catKey].items.forEach(item => {
+                if (item.value > 0) { 
+                    cumulative -= item.value; 
+                    appendTableRow(item.name, state[catKey].title, -item.value, "minus", cumulative); 
+                }
+            });
+        });
+
+        // 마지막 결산: 남은 잉여액을 파킹으로 0원 맞춤
+        const parkingType = autoParking >= 0 ? "minus" : "plus"; // 적자일 경우도 수식상 호환되도록 방어코드
+        appendTableRow("파킹 추가 (자동 통합 저축)", "최종 잉여 예비비 + 추가 각출액 일괄 이체", -autoParking, parkingType, cumulative - autoParking);
+
+        // 잔액은 항상 0으로 수렴해야 함 (Zero-sum)
+        const totalTr = document.createElement('tr'); totalTr.className = "total-row";
+        totalTr.innerHTML = `<td><div><strong>가계 결산 잔액 (Zero-Sum)</strong></div></td><td></td><td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">₩0</td>`;
+        tbody.appendChild(totalTr);
+    }
+    
+    function appendTableRow(name, desc, amt, type, cumulative) {
+        const tbody = document.getElementById('result-tbody'); const tr = document.createElement('tr');
+        tr.innerHTML = `<td><div><strong>${name}</strong></div><div class="sub-text">${desc}</div></td><td class="amount ${type}">${amt > 0 ? '+' : ''}${formatKRW(amt)}</td><td class="amount"><strong>${formatKRW(cumulative)}</strong></td>`;
+        tbody.appendChild(tr);
+    }
+    
+    window.onload = init;
+</script>
+</body>
+</html>
