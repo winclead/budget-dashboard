@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부부 자산 관리 시뮬레이터 v3</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --plus-color: #38bdf8;
+            --minus-color: #f43f5e;
+            --accent-color: #10b981;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin: 0;
+            color: #fff;
+        }
+
+        .btn-reset {
+            background-color: #475569;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:hover {
+            background-color: #334155;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .layout {
+                grid-template-columns: 500px 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-block {
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 16px;
+        }
+        .section-block:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-subtitle {
+            font-size: 0.95rem;
+            color: var(--plus-color);
+            font-weight: 600;
+        }
+
+        .btn-add {
+            background: transparent;
+            color: var(--plus-color);
+            border: 1px inline var(--plus-color);
+            border: 1px solid var(--plus-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .item-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .item-row input {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .item-row input.item-name {
+            flex: 1;
+            text-align: left;
+        }
+
+        .item-row input.item-val {
+            width: 130px;
+            text-align: right;
+        }
+
+        .item-row input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-del {
+            background: transparent;
+            color: var(--minus-color);
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: transform 0.2s;
+        }
+        .btn-del:hover {
+            transform: scale(1.2);
+        }
+
+        /* 대시보드 요약 스타일 */
+        .summary-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: #111827;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .summary-card .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .summary-card .value {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        td.amount {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .plus { color: var(--plus-color); }
+        .minus { color: var(--minus-color); }
+
+        .sub-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+        
+        .total-row td {
+            border-bottom: 2px solid var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-area">
+        <h1>부부 자산 관리 시뮬레이터 v3</h1>
+        <button class="btn-reset" onclick="resetToDefault()">초기 설정으로 리셋</button>
+    </div>
+
+    <div class="layout">
+        <div class="card">
+            <div class="card-title">변수 설정 및 구성 항목</div>
+            <div id="dynamic-inputs-container"></div>
+        </div>
+
+        <div>
+            <div class="summary-box">
+                <div class="summary-card" style="border-left: 4px solid var(--primary-color);">
+                    <div class="label">기초 각출 재원 소계</div>
+                    <div class="value" id="sum-base-res">₩0</div>
+                </div>
+                <div class="summary-card" style="border-left: 4px solid var(--accent-color);">
+                    <div class="label">총 운용 재원 (기초+추가)</div>
+                    <div class="value" id="sum-total-res" style="color: var(--accent-color);">₩0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">가계 자산 배분 실시간 결과 흐름</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">예산 항목 내역</th>
+                            <th style="width: 25%; text-align: right;">할당 금액</th>
+                            <th style="width: 25%; text-align: right;">정산 누적 잔액</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 최초 기본 데이터셋 정의
+    const defaultData = {
+        income: {
+            title: "1. 소득 및 기초 각출 설정",
+            canAdd: false,
+            items: [
+                { id: "h_salary", name: "남편 월급", value: 5000000, isCore: true },
+                { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
+                { id: "h_base", name: "남편 기초 각출", value: 4300000, isCore: true },
+                { id: "w_base", name: "아내 기초 각출", value: 4000000, isCore: true },
+                { id: "extra_ratio", name: "잔액 각출 비율 (%)", value: 50, isCore: true, isPercent: true }
+            ]
+        },
+        expenses: {
+            title: "2. 대출 및 고정 지출",
+            canAdd: true,
+            items: [
+                { id: "loan_h", name: "의현 주담대", value: 2520000 },
+                { id: "loan_w", name: "원영 이자", value: 240000 },
+                { id: "congrat", name: "경조사비", value: 200000 },
+                { id: "manage", name: "관리비 상정액", value: 320000 },
+                { id: "saving_m", name: "장모님용 적금", value: 300000 }
+            ]
+        },
+        subscriptions: {
+            title: "3. 각종 월 구독료 고정 지출",
+            canAdd: true,
+            items: [
+                { id: "sub_tv", name: "TV/인터넷", value: 40980 },
+                { id: "sub_gemini", name: "제미나이 AI", value: 29000 },
+                { id: "sub_youtube", name: "유튜브 프리미엄", value: 11000 },
+                { id: "sub_naver", name: "네이버 플러스(넷플릭스)", value: 4900 },
+                { id: "sub_coupang", name: "쿠팡 와우", value: 7890 }
+            ]
+        },
+        variable: {
+            title: "4. 공금 및 활동 변동 지출",
+            canAdd: true,
+            items: [
+                { id: "public_fee", name: "공금 비용", value: 700000 },
+                { id: "pouch_w", name: "원영 용돈", value: 600000 },
+                { id: "pouch_h", name: "의현 용돈", value: 500000 },
+                { id: "travel", name: "여행비 (장기 전용)", value: 500000 }
+            ]
+        },
+        future: {
+            title: "5. 미래 자산 및 연간 예비비",
+            canAdd: true,
+            items: [
+                { id: "add_loan", name: "대출 추가 상환", value: 1000000 },
+                { id: "invest", name: "투자 재원", value: 1000000 },
+                { id: "parking_annual", name: "파킹 기본 (명절/세금 등)", value: 200000 }
+            ]
+        }
+    };
+
+    let state = {};
+
+    // 로컬 스토리지에서 상태 로드 또는 초기화
+    function init() {
+        const saved = localStorage.getItem('couple_budget_state_v3');
+        if (saved) {
+            try {
+                state = JSON.parse(saved);
+            } catch (e) {
+                state = JSON.parse(JSON.stringify(defaultData));
+            }
+        } else {
+            state = JSON.parse(JSON.stringify(defaultData));
+        }
+        renderInputs();
+        calculate();
+    }
+
+    function saveState() {
+        localStorage.setItem('couple_budget_state_v3', JSON.stringify(state));
+    }
+
+    function resetToDefault() {
+        if(confirm("모든 세팅과 추가된 항목을 초기 데이터로 리셋하시겠습니까?")) {
+            localStorage.removeItem('couple_budget_state_v3');
+            init();
+        }
+    }
+
+    function formatKRW(val) {
+        return "₩" + Math.abs(val).toLocaleString();
+    }
+
+    // 항목 추가 기능
+    function addItem(catKey) {
+        const newId = "custom_" + Date.now();
+        state[catKey].items.push({
+            id: newId,
+            name: "새로운 항목",
+            value: 0
+        });
+        saveState();
+        renderInputs();
+        calculate();
+    }
+
+    // 항목 삭제 기능
+    function deleteItem(catKey, itemId) {
+        state[catKey].items = state[catKey].items.filter(i => i.id !== itemId);
+        saveState();
+        renderInputs();
+        calculate();
+    }
+
+    // 인풋 필드 값 핸들링 (천단위 실시간 콤마 포맷팅 유지 로직)
+    function handleValueUpdate(catKey, itemId, element, isPercent) {
+        let raw = element.value.replace(/[^0-9]/g, '');
+        let num = parseInt(raw) || 0;
+
+        if (isPercent && num > 100) num = 100;
+
+        // 안드로이드 환경 입력 편의를 위해 마스크 위치 추적 구문 적용
+        const start = element.selectionStart;
+        const oldLen = element.value.length;
+
+        element.value = isPercent ? num : num.toLocaleString();
+
+        const newLen = element.value.length;
+        element.selectionStart = start + (newLen - oldLen);
+        element.selectionEnd = start + (newLen - oldLen);
+
+        // 상태 저장
+        const item = state[catKey].items.find(i => i.id === itemId);
+        if (item) item.value = num;
+        saveState();
+        calculate();
+    }
+
+    // 항목 이름 변경 핸들링
+    function handleNameUpdate(catKey, itemId, element) {
+        const item = state[catKey].items.find(i => i.id === itemId);
+        if (item) item.name = element.value;
+        saveState();
+        calculate();
+    }
+
+    // 왼쪽 설정 영역 동적 HTML 렌더링
+    function renderInputs() {
+        const container = document.getElementById('dynamic-inputs-container');
+        container.innerHTML = "";
+
+        for (const [catKey, catData] of Object.entries(state)) {
+            const block = document.createElement('div');
+            block.className = "section-block";
+
+            // 섹션 헤더 구성
+            const header = document.createElement('div');
+            header.className = "section-header";
+            header.innerHTML = `<span class="section-subtitle">${catData.title}</span>`;
+            
+            if (catData.canAdd) {
+                const addBtn = document.createElement('button');
+                addBtn.className = "btn-add";
+                addBtn.textContent = "+ 항목 추가";
+                addBtn.onclick = () => addItem(catKey);
+                header.appendChild(addBtn);
+            }
+            block.appendChild(header);
+
+            // 각 항목 인풋 필드 구성
+            catData.items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "item-row";
+
+                // 이름 인풋창
+                const nameInput = document.createElement('input');
+                nameInput.type = "text";
+                nameInput.className = "item-name";
+                nameInput.value = item.name;
+                nameInput.disabled = item.isCore; // 고정 필수조건은 이름 수정 불가
+                nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
+
+                // 금액 인풋창
+                const valInput = document.createElement('input');
+                valInput.type = "text";
+                valInput.className = "item-val";
+                valInput.value = item.isPercent ? item.value : item.value.toLocaleString();
+                valInput.oninput = () => handleValueUpdate(catKey, item.id, valInput, item.isPercent);
+
+                row.appendChild(nameInput);
+                row.appendChild(valInput);
+
+                // 삭제 버튼 (추가된 커스텀 요소들만 작동)
+                if (!item.isCore) {
+                    const delBtn = document.createElement('button');
+                    delBtn.className = "btn-del";
+                    delBtn.innerHTML = "✕";
+                    delBtn.onclick = () => deleteItem(catKey, item.id);
+                    row.appendChild(delBtn);
+                } else {
+                    // 간격 균형 유지를 위한 더미 스페이서
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '28px';
+                    row.appendChild(spacer);
+                }
+
+                block.appendChild(row);
+            });
+
+            container.appendChild(block);
+        }
+    }
+
+    // 메인 연산 및 결과 테이블 동적 갱신
+    function calculate() {
+        const getItemVal = (cat, id) => {
+            const target = state[cat].items.find(i => i.id === id);
+            return target ? target.value : 0;
+        };
+
+        // 1. 소득 구조 파싱
+        const hSalary = getItemVal('income', 'h_salary');
+        const wSalary = getItemVal('income', 'w_salary');
+        const hBase = getItemVal('income', 'h_base');
+        const wBase = getItemVal('income', 'w_base');
+        const extraRatio = getItemVal('income', 'extra_ratio') / 100;
+
+        // 2. 가계 기초 및 추가 재원 도출 가동
+        const totalBaseResource = hBase + wBase;
+        const hExtra = Math.max(0, hSalary - hBase) * extraRatio;
+        const wExtra = Math.max(0, wSalary - wBase) * extraRatio;
+        const totalExtraResource = hExtra + wExtra;
+        const totalResource = totalBaseResource + totalExtraResource;
+
+        document.getElementById('sum-base-res').textContent = formatKRW(totalBaseResource);
+        document.getElementById('sum-total-res').textContent = formatKRW(totalResource);
+
+        // 3. 자산 흐름 어레이 빌딩
+        let cumulative = 0;
+        const tbody = document.getElementById('result-tbody');
+        tbody.innerHTML = "";
+
+        // 재원 적립 라인 출력
+        const initialFlows = [
+            { name: "일정 금액(월급) 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `남편 기초각출(${formatKRW(hBase)}) + 아내 기초각출(${formatKRW(wBase)})` },
+            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `남편 추가분(${formatKRW(hExtra)}) + 아내 추가분(${formatKRW(wExtra)}) [잔액의 ${extraRatio*100}%]` },
+            { name: "추가 각출금액 파킹 저축 분리", amt: -totalExtraResource, type: "minus", desc: "변동성 대비용 별도 바인딩 파킹" }
+        ];
+
+        initialFlows.forEach(item => {
+            cumulative += item.amt;
+            appendTableRow(item.name, item.desc, item.amt, item.type, cumulative);
+        });
+
+        // 4. 나머지 모든 유저 커스텀 세부 지출 항목 차감 순회 연산
+        const targetCategories = ['expenses', 'subscriptions', 'variable', 'future'];
+        
+        targetCategories.forEach(catKey => {
+            let catSum = 0;
+            // 카테고리별 개별 항목 매핑 차감
+            state[catKey].items.forEach(item => {
+                if (item.value > 0) {
+                    cumulative -= item.value;
+                    appendTableRow(item.name, state[catKey].title, -item.value, "minus", cumulative);
+                }
+            });
+        });
+
+        // 최종 예비비 정산 로우 마감
+        const totalTr = document.createElement('tr');
+        totalTr.className = "total-row";
+        totalTr.innerHTML = `
+            <td><div><strong>최종 정산 잔액 (유동 예비비)</strong></div><div class="sub-text">모든 목적성 할당 후 가계 최종 가용 잔고</div></td>
+            <td></td>
+            <td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">${formatKRW(cumulative)}</td>
+        `;
+        tbody.appendChild(totalTr);
+    }
+
+    // 결과 테이블 도우미 함수
+    function appendTableRow(name, desc, amt, type, cumulative) {
+        const tbody = document.getElementById('result-tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div><strong>${name}</strong></div>
+                <div class="sub-text">${desc}</div>
+            </td>
+            <td class="amount ${type}">${amt > 0 ? '+' : ''}${formatKRW(amt)}</td>
+            <td class="amount"><strong>${formatKRW(cumulative)}</strong></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    // 초기 구동 브라우저 바인딩
+    window.onload = init;
+</script>
+
+</body>
+</html>
