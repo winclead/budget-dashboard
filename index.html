@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부부 자산 관리 시뮬레이터 v7 (Total Edition)</title>
+    <title>부부 자산 관리 시뮬레이터 v8 (Master Edition)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
@@ -36,13 +36,13 @@
         .item-row input.item-val { width: 130px; text-align: right; }
         .btn-del { background: transparent; color: var(--minus-color); border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; }
         
-        /* 대시보드 요약 및 테이블 */
+        /* 대시보드 2단 요약 그리드 */
         .summary-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        @media (min-width: 768px) { .summary-box { grid-template-columns: repeat(4, 1fr); } }
-        .summary-card { background: #111827; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
-        .summary-card .label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-        .summary-card .value { font-size: 1.15rem; font-weight: bold; }
-        .pouch-card { border-left: 4px solid #f59e0b; }
+        @media (min-width: 768px) { .summary-box { grid-template-columns: repeat(3, 1fr); } }
+        .summary-card { background: #111827; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        .summary-card .label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+        .summary-card .value { font-size: 1.2rem; font-weight: bold; }
+        .summary-card .sub-value { font-size: 0.75rem; color: #64748b; margin-top: 6px; }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
@@ -70,7 +70,7 @@
 
 <div class="container">
     <div class="header-area">
-        <h1>부부 자산 관리 시뮬레이터 v7</h1>
+        <h1>부부 자산 관리 시뮬레이터 v8</h1>
     </div>
 
     <div class="layout">
@@ -81,7 +81,7 @@
                 <div class="pin-box">
                     <label style="font-weight: bold; color: #fff;">보안 PIN :</label>
                     <input type="password" id="user-pin" class="pin-input" maxlength="4" placeholder="****">
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">클라우드 통신을 위한 비밀번호</span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">클라우드 비밀번호</span>
                 </div>
 
                 <div class="flex-row">
@@ -99,7 +99,6 @@
                     <button class="btn-git btn-sm" onclick="renameCloudPreset()" style="background-color: #4b5563;">이름 변경</button>
                     <button class="btn-git btn-sm btn-danger" onclick="deleteCloudPreset()">삭제</button>
                 </div>
-
                 <div id="git-status" class="status-msg"></div>
             </div>
 
@@ -111,26 +110,41 @@
 
         <div>
             <div class="summary-box">
-                <div class="summary-card" style="border-left: 4px solid var(--primary-color);">
-                    <div class="label">기초 각출 공동비</div>
-                    <div class="value" id="sum-base-res">₩0</div>
+                <div class="summary-card" style="border-left: 4px solid #f59e0b;">
+                    <div class="label">남편 실사용 총 용돈</div>
+                    <div class="value" id="dash-pouch-h" style="color: #f59e0b;">₩0</div>
+                    <div class="sub-value" id="dash-pouch-h-sub">공금 0 + 개인 0</div>
                 </div>
-                <div class="summary-card" style="border-left: 4px solid var(--accent-color);">
-                    <div class="label">총 운용 재원 (기초+추가)</div>
-                    <div class="value" id="sum-total-res" style="color: var(--accent-color);">₩0</div>
+                <div class="summary-card" style="border-left: 4px solid #f59e0b;">
+                    <div class="label">아내 실사용 총 용돈</div>
+                    <div class="value" id="dash-pouch-w" style="color: #f59e0b;">₩0</div>
+                    <div class="sub-value" id="dash-pouch-w-sub">공금 0 + 개인 0</div>
                 </div>
-                <div class="summary-card pouch-card">
-                    <div class="label">의현 총 용돈 (개인잔여+공금)</div>
-                    <div class="value" id="sum-pouch-h" style="color: #f59e0b;">₩0</div>
+                <div class="summary-card" style="border-left: 4px solid #14b8a6;">
+                    <div class="label">공금 및 용돈 배분액</div>
+                    <div class="value" id="dash-variable">₩0</div>
+                    <div class="sub-value">4. 공금/용돈 항목 합계</div>
                 </div>
-                <div class="summary-card pouch-card">
-                    <div class="label">원영 총 용돈 (개인잔여+공금)</div>
-                    <div class="value" id="sum-pouch-w" style="color: #f59e0b;">₩0</div>
+
+                <div class="summary-card" style="border-left: 4px solid var(--minus-color);">
+                    <div class="label">대출 상환 총액</div>
+                    <div class="value" id="dash-loan">₩0</div>
+                    <div class="sub-value">2. 대출 항목 합계</div>
+                </div>
+                <div class="summary-card" style="border-left: 4px solid #ec4899;">
+                    <div class="label">월 고정 지출 총액</div>
+                    <div class="value" id="dash-fixed">₩0</div>
+                    <div class="sub-value">3. 고정/구독료 합계</div>
+                </div>
+                <div class="summary-card" style="border-left: 4px solid var(--git-color);">
+                    <div class="label">총 저축/투자 (파킹포함)</div>
+                    <div class="value" id="dash-savings">₩0</div>
+                    <div class="sub-value" id="dash-savings-sub">기본입력 0 + 자동파킹 0</div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">가계 자산 배분 실시간 결과 흐름</div>
+                <div class="card-title">가계 자산 흐름 결산서 (Zero-Sum)</div>
                 <table>
                     <thead>
                         <tr><th style="width: 50%;">예산 항목 내역</th><th style="width: 25%; text-align: right;">할당 금액</th><th style="width: 25%; text-align: right;">정산 누적 잔액</th></tr>
@@ -143,12 +157,8 @@
 </div>
 
 <script>
-    /* ====================================================================
-       🔒 [중요] 암호화 토큰 설정 유지
-       ==================================================================== */
     const GITHUB_REPO = "winclead/budget-dashboard"; 
     const ENCRYPTED_TOKEN = "U2FsdGVkX18MdxxHnpKEyNthbx3ThSPXiRn7jhGFSDXRm/0pLjrm+JX6yr0AD5cqJ5GgFB/WRkEVSsRedlCmLA==";
-    /* ==================================================================== */
 
     let state = {};
     let cachedCloudPresets = {};
@@ -187,7 +197,6 @@
         });
     }
 
-    /* GitHub 공통 통신 함수 (이름변경/삭제 처리를 위해 추상화) */
     async function updateGitHubFile(newPresetsData, commitMessage) {
         const headers = await getGitHubHeaders();
         const getRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/presets.json`, { method: 'GET', headers });
@@ -222,11 +231,8 @@
             const presetName = document.getElementById('preset-save-name').value.trim();
             if (!presetName) throw new Error("저장할 프리셋 이름을 입력하세요.");
             setStatus(`"${presetName}" 저장 중...`);
-            
-            // 기존 캐시 병합 후 통짜 업로드
             cachedCloudPresets[presetName] = state; 
             await updateGitHubFile(cachedCloudPresets, `Save budget preset: ${presetName}`);
-            
             document.getElementById('preset-save-name').value = "";
             setStatus("✅ 성공적으로 클라우드에 저장되었습니다!");
             updatePresetDropdown();
@@ -239,24 +245,27 @@
         if (!selectedName) return alert("불러올 프리셋을 선택해주세요.");
         if (cachedCloudPresets[selectedName]) {
             state = cachedCloudPresets[selectedName];
+            
+            // v8 마이그레이션 방어코드 적용
+            if(!state.loan || !state.savings) {
+                alert("선택하신 프리셋은 이전 버전(v7 이하) 포맷입니다.\n원활한 사용을 위해 새 포맷으로 덮어씌워 렌더링합니다.");
+                state = JSON.parse(JSON.stringify(systemDefaultData));
+            }
+
             saveLocalState(); renderInputs(); calculate();
             setStatus(`✅ "${selectedName}" 설정이 적용되었습니다.`);
         }
     }
 
-    /* 🌟 v7 신규 기능: 프리셋 이름 변경 */
     async function renameCloudPreset() {
         const oldName = document.getElementById('preset-load-select').value;
         if (!oldName) return alert("이름을 변경할 프리셋을 드롭다운에서 선택하세요.");
-        
         const newName = prompt(`"${oldName}"의 새로운 이름을 입력하세요:`, oldName);
         if (!newName || newName.trim() === "" || newName === oldName) return;
-
         try {
             setStatus(`이름 변경 중...`);
             cachedCloudPresets[newName] = cachedCloudPresets[oldName];
             delete cachedCloudPresets[oldName];
-            
             await updateGitHubFile(cachedCloudPresets, `Rename preset: ${oldName} to ${newName}`);
             setStatus("✅ 이름 변경이 완료되었습니다.");
             updatePresetDropdown();
@@ -264,13 +273,10 @@
         } catch (err) { setStatus(err.message, true); }
     }
 
-    /* 🌟 v7 신규 기능: 프리셋 삭제 */
     async function deleteCloudPreset() {
         const targetName = document.getElementById('preset-load-select').value;
         if (!targetName) return alert("삭제할 프리셋을 드롭다운에서 선택하세요.");
-        
         if (!confirm(`정말 "${targetName}" 프리셋을 영구 삭제하시겠습니까?`)) return;
-
         try {
             setStatus(`삭제 중...`);
             delete cachedCloudPresets[targetName];
@@ -282,45 +288,48 @@
 
 
     /* ====================================================================
-       🌟 [v7 카테고리 재편성] 
+       🌟 [v8 최종 카테고리 구성 (이미지 완벽 매핑)] 
        ==================================================================== */
     const systemDefaultData = {
         income: { title: "1. 소득 및 기초 각출 설정", canAdd: false, items: [
-            { id: "h_salary", name: "남편 월급", value: 5000000, isCore: true }, { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
-            { id: "h_base", name: "남편 기초 각출", value: 4300000, isCore: true }, { id: "w_base", name: "아내 기초 각출", value: 4000000, isCore: true },
+            { id: "h_salary", name: "남편 월급", value: 4100000, isCore: true }, { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
+            { id: "h_base", name: "남편 기초 각출", value: 4000000, isCore: true }, { id: "w_base", name: "아내 기초 각출", value: 4200000, isCore: true },
             { id: "extra_ratio", name: "잔액 각출 비율 (%)", value: 50, isCore: true, isPercent: true }
         ]},
-        expenses: { title: "2. 대출 상환 및 저축/투자", canAdd: true, items: [
-            { id: "loan_h", name: "의현 주담대", value: 2520000 }, { id: "loan_w", name: "원영 이자", value: 240000 },
-            { id: "add_loan", name: "대출 추가 상환", value: 1000000 }, { id: "invest", name: "투자 재원", value: 1000000 }, 
-            { id: "saving_m", name: "장모님용 적금", value: 300000 }, { id: "travel", name: "여행비 저축", value: 500000 }
+        loan: { title: "2. 대출 상환", canAdd: true, items: [
+            { id: "loan_h", name: "우리은행 주담대", value: 2520000 }, { id: "loan_w", name: "새마을금고 대출", value: 240000 },
+            { id: "add_loan", name: "대출 추가 상환", value: 1000000 }
         ]},
-        subscriptions: { title: "3. 각종 월 구독료 고정 지출", canAdd: true, items: [
-            { id: "sub_tv", name: "TV/인터넷", value: 40980 }, { id: "sub_gemini", name: "제미나이 AI", value: 29000 },
-            { id: "sub_youtube", name: "유튜브 프리미엄", value: 11000 }, { id: "sub_naver", name: "네이버 플러스", value: 4900 }, { id: "sub_coupang", name: "쿠팡 와우", value: 7890 }
+        savings: { title: "3. 저축 및 투자", canAdd: true, items: [
+            { id: "invest", name: "투자 재원", value: 1000000 }, { id: "saving_m", name: "장모님용 적금", value: 300000 }, 
+            { id: "travel", name: "여행비 저축", value: 500000 }, { id: "congrat", name: "경조사비", value: 200000 },
+            { id: "parking_base", name: "파킹 기본", value: 200000 }
         ]},
-        variable: { title: "4. 공금 및 부부 용돈", canAdd: true, items: [
+        fixed: { title: "4. 고정 지출 및 구독료", canAdd: true, items: [
+            { id: "manage", name: "관리비 상정액", value: 320000 }, { id: "sub_tv", name: "TV/인터넷", value: 40980 }, 
+            { id: "sub_gemini", name: "제미나이 AI", value: 29000 }, { id: "sub_youtube", name: "유튜브 프리미엄", value: 11000 }, 
+            { id: "sub_naver", name: "네이버 플러스", value: 4900 }, { id: "sub_coupang", name: "쿠팡 와우", value: 7890 }
+        ]},
+        variable: { title: "5. 공금 및 부부 용돈", canAdd: true, items: [
             { id: "public_fee", name: "공금 비용", value: 700000 }, 
             { id: "pouch_w", name: "원영 공금 용돈", value: 600000 }, { id: "pouch_h", name: "의현 공금 용돈", value: 500000 }
-        ]},
-        future: { title: "5. 파킹 및 기타 예비비", canAdd: true, items: [
-            { id: "manage", name: "관리비 상정액", value: 320000 }, { id: "congrat", name: "경조사비", value: 200000 }, 
-            { id: "parking_annual", name: "파킹 기본", value: 200000 }
         ]}
     };
 
     function init() {
-        const saved = localStorage.getItem('couple_budget_state_v7');
-        if (saved) { try { state = JSON.parse(saved); } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); } } 
-        else { state = JSON.parse(JSON.stringify(systemDefaultData)); }
+        const saved = localStorage.getItem('couple_budget_state_v8');
+        if (saved) { 
+            try { 
+                state = JSON.parse(saved); 
+                // 이전 버전 호환성 강제 덮어쓰기 로직
+                if(!state.loan || !state.savings) throw new Error("Old Version");
+            } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); } 
+        } else { state = JSON.parse(JSON.stringify(systemDefaultData)); }
         
-        // 이전 버전(v6)의 state 구조와 안 맞을 경우를 대비한 자동 병합/초기화 방어 로직
-        if(!state.future || !state.future.items.find(i=>i.id==='manage')) {
-             state = JSON.parse(JSON.stringify(systemDefaultData));
-        }
         renderInputs(); calculate();
     }
-    function saveLocalState() { localStorage.setItem('couple_budget_state_v7', JSON.stringify(state)); }
+    
+    function saveLocalState() { localStorage.setItem('couple_budget_state_v8', JSON.stringify(state)); }
     function formatKRW(val) { return "₩" + Math.abs(val).toLocaleString(); }
     function handleValueUpdate(catKey, itemId, element, isPercent) {
         let raw = element.value.replace(/[^0-9]/g, ''); let num = parseInt(raw) || 0; if (isPercent && num > 100) num = 100;
@@ -349,88 +358,4 @@
             }
             block.appendChild(header);
             catData.items.forEach(item => {
-                const row = document.createElement('div'); row.className = "item-row";
-                const nameInput = document.createElement('input'); nameInput.type = "text"; nameInput.className = "item-name";
-                nameInput.value = item.name; nameInput.disabled = item.isCore; nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
-                const valInput = document.createElement('input'); valInput.type = "text"; valInput.className = "item-val";
-                valInput.value = item.isPercent ? item.value : item.value.toLocaleString(); valInput.oninput = () => handleValueUpdate(catKey, item.id, valInput, item.isPercent);
-                row.appendChild(nameInput); row.appendChild(valInput);
-                if (!item.isCore) {
-                    const delBtn = document.createElement('button'); delBtn.className = "btn-del"; delBtn.innerHTML = "✕"; delBtn.onclick = () => deleteItem(catKey, item.id); row.appendChild(delBtn);
-                } else { const spacer = document.createElement('div'); spacer.style.width = '28px'; row.appendChild(spacer); }
-                block.appendChild(row);
-            });
-            container.appendChild(block);
-        }
-    }
-
-    function calculate() {
-        const getItemVal = (cat, id) => { const target = state[cat].items.find(i => i.id === id); return target ? target.value : 0; };
-        
-        // 1. 소득 및 잔액 분석
-        const hSalary = getItemVal('income', 'h_salary');
-        const wSalary = getItemVal('income', 'w_salary');
-        const hBase = getItemVal('income', 'h_base'); 
-        const wBase = getItemVal('income', 'w_base');
-        const extraRatio = getItemVal('income', 'extra_ratio') / 100;
-        
-        const totalBaseResource = hBase + wBase;
-        
-        // 기초 각출 후 남은 개인별 잔액
-        const hRemainder = Math.max(0, hSalary - hBase);
-        const wRemainder = Math.max(0, wSalary - wBase);
-        
-        // 공금으로 보내는 추가 각출 금액 (50%)
-        const hExtraToJoint = hRemainder * extraRatio;
-        const wExtraToJoint = wRemainder * extraRatio;
-        const totalExtraResource = hExtraToJoint + wExtraToJoint; 
-        
-        // 각자의 통장에 남은 최종 개인 잉여 자금
-        const hPersonalRetained = hRemainder - hExtraToJoint;
-        const wPersonalRetained = wRemainder - wExtraToJoint;
-
-        // 대시보드 업데이트
-        document.getElementById('sum-base-res').textContent = formatKRW(totalBaseResource); 
-        document.getElementById('sum-total-res').textContent = formatKRW(totalBaseResource + totalExtraResource);
-
-        // 🌟 내 용돈 계산: (통장에 남은 돈) + (공금비에서 할당받는 용돈)
-        const jointPouchH = getItemVal('variable', 'pouch_h');
-        const jointPouchW = getItemVal('variable', 'pouch_w');
-        document.getElementById('sum-pouch-h').textContent = formatKRW(hPersonalRetained + jointPouchH);
-        document.getElementById('sum-pouch-w').textContent = formatKRW(wPersonalRetained + jointPouchW);
-
-        let cumulative = 0; 
-        const tbody = document.getElementById('result-tbody'); tbody.innerHTML = "";
-        
-        // 2. 가계부 흐름 빌드 (추가 각출은 들어오자마자 예비비 파킹으로 차감)
-        const initialFlows = [
-            { name: "일정 금액 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `의현 기초(${formatKRW(hBase)}) + 원영 기초(${formatKRW(wBase)})` },
-            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `의현 추가(${formatKRW(hExtraToJoint)}) + 원영 추가(${formatKRW(wExtraToJoint)})` },
-            { name: "추가 각출금액 예비비 파킹 (우선 분리)", amt: -totalExtraResource, type: "minus", desc: "추가 합산액 100% 예비비 자동 이체" }
-        ];
-        initialFlows.forEach(item => { cumulative += item.amt; appendTableRow(item.name, item.desc, item.amt, item.type, cumulative); });
-
-        // 나머지 모든 커스텀 내역 차감 (2, 3, 4, 5번 섹션 순회)
-        ['expenses', 'subscriptions', 'variable', 'future'].forEach(catKey => {
-            state[catKey].items.forEach(item => {
-                if (item.value > 0) { 
-                    cumulative -= item.value; 
-                    appendTableRow(item.name, state[catKey].title, -item.value, "minus", cumulative); 
-                }
-            });
-        });
-
-        const totalTr = document.createElement('tr'); totalTr.className = "total-row";
-        totalTr.innerHTML = `<td><div><strong>최종 정산 잔액 (최종 잉여 예비비)</strong></div></td><td></td><td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">${formatKRW(cumulative)}</td>`;
-        tbody.appendChild(totalTr);
-    }
-    
-    function appendTableRow(name, desc, amt, type, cumulative) {
-        const tbody = document.getElementById('result-tbody'); const tr = document.createElement('tr');
-        tr.innerHTML = `<td><div><strong>${name}</strong></div><div class="sub-text">${desc}</div></td><td class="amount ${type}">${amt > 0 ? '+' : ''}${formatKRW(amt)}</td><td class="amount"><strong>${formatKRW(cumulative)}</strong></td>`;
-        tbody.appendChild(tr);
-    }
-    window.onload = init;
-</script>
-</body>
-</html>
+                const row = document.createElement('
