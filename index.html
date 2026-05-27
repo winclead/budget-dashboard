@@ -3,304 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부부 자산 관리 시뮬레이터 v4</title>
+    <title>부부 자산 관리 시뮬레이터 v6 (PIN 보안)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --border-color: #334155;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary-color: #6366f1;
-            --plus-color: #38bdf8;
-            --minus-color: #f43f5e;
-            --accent-color: #10b981;
+            --bg-color: #0f172a; --card-bg: #1e293b; --border-color: #334155;
+            --text-color: #f8fafc; --text-muted: #94a3b8; --primary-color: #6366f1;
+            --plus-color: #38bdf8; --minus-color: #f43f5e; --accent-color: #10b981;
+            --git-color: #8b5cf6;
         }
-
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
-        }
-
-        h1 {
-            font-size: 1.6rem;
-            margin: 0;
-            color: #fff;
-        }
-
-        .btn-reset {
-            background-color: #e11d48;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-
-        .btn-reset:hover {
-            background-color: #be123c;
-        }
-
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
-
-        @media (min-width: 1024px) {
-            .layout {
-                grid-template-columns: 520px 1fr;
-            }
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            height: fit-content;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 16px;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .section-block {
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 16px;
-        }
-        .section-block:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .section-subtitle {
-            font-size: 0.95rem;
-            color: var(--plus-color);
-            font-weight: 600;
-        }
-
-        .btn-add {
-            background: transparent;
-            color: var(--plus-color);
-            border: 1px solid var(--plus-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-add:hover {
-            background: rgba(56, 189, 248, 0.1);
-        }
-
-        .item-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            align-items: center;
-        }
-
-        .item-row input {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            color: #fff;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .item-row input.item-name {
-            flex: 1;
-            text-align: left;
-        }
-
-        .item-row input.item-val {
-            width: 130px;
-            text-align: right;
-        }
-
-        .item-row input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .btn-del {
-            background: transparent;
-            color: var(--minus-color);
-            border: none;
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 4px 8px;
-            transition: transform 0.2s;
-        }
-        .btn-del:hover {
-            transform: scale(1.2);
-        }
-
-        .summary-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .summary-card {
-            background: #111827;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .summary-card .label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .summary-card .value {
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.95rem;
-        }
-
-        th {
-            color: var(--text-muted);
-            font-weight: 500;
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        td.amount {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        h1 { font-size: 1.6rem; margin: 0; color: #fff; }
+        .layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 1024px) { .layout { grid-template-columns: 520px 1fr; } }
+        
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; color: #fff; }
+        
+        /* 공통 인풋 스타일 */
+        input, select { background: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.9rem; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); }
+        
+        /* 설정 테이블 요소 */
+        .section-block { margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .section-subtitle { font-size: 0.95rem; color: var(--plus-color); font-weight: 600; }
+        .btn-add { background: transparent; color: var(--plus-color); border: 1px solid var(--plus-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .item-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .item-row input.item-name { flex: 1; }
+        .item-row input.item-val { width: 130px; text-align: right; }
+        .btn-del { background: transparent; color: var(--minus-color); border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; }
+        
+        /* 대시보드 요약 및 테이블 */
+        .summary-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .summary-card { background: #111827; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
+        .summary-card .label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        .summary-card .value { font-size: 1.25rem; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
+        th { color: var(--text-muted); font-weight: 500; background-color: rgba(0,0,0,0.1); }
+        td.amount { text-align: right; font-variant-numeric: tabular-nums; }
         .plus { color: var(--plus-color); }
         .minus { color: var(--minus-color); }
+        .sub-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+        .total-row { font-weight: bold; background-color: rgba(99, 102, 241, 0.1); }
+        .total-row td { border-bottom: 2px solid var(--primary-color); }
 
-        .sub-text {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+        /* 클라우드 패널 (PIN 기반) */
+        .github-wrapper { background: rgba(139, 92, 246, 0.05); padding: 16px; border-radius: 8px; border: 1px solid var(--git-color); margin-bottom: 20px; }
+        .pin-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+        .pin-input { width: 80px; text-align: center; font-size: 1.2rem; letter-spacing: 4px; font-weight: bold; color: var(--git-color); border-color: var(--git-color); }
+        .flex-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .flex-row input[type="text"], .flex-row select { flex: 1; }
+        .btn-git { background-color: var(--git-color); color: #fff; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .status-msg { font-size: 0.85rem; margin-top: 8px; color: var(--accent-color); font-weight: 500; }
 
-        .total-row {
-            font-weight: bold;
-            background-color: rgba(99, 102, 241, 0.1);
-        }
-        
-        .total-row td {
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        /* 프리셋 대시보드 컴포넌트 */
-        .preset-wrapper {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px dashed var(--border-color);
-        }
-        .preset-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .preset-grid:last-child {
-            margin-bottom: 0;
-        }
-        .btn-action {
-            border: none;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #fff;
-            transition: opacity 0.2s;
-        }
-        .btn-action:hover {
-            opacity: 0.9;
-        }
+        /* 토큰 암호화 도구 (최초 1회용) */
+        details.setup-tool { margin-top: 15px; font-size: 0.85rem; background: #1e1e1e; padding: 10px; border-radius: 6px; border: 1px dashed #555; }
+        details.setup-tool summary { cursor: pointer; color: #aaa; margin-bottom: 10px; }
+        .setup-grid { display: grid; gap: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-area">
-        <h1>부부 자산 관리 시뮬레이터 v4</h1>
-        <button class="btn-reset" onclick="resetToSystemDefault()">공장 초기화 (최초 이미지 기준)</button>
+        <h1>부부 자산 관리 시뮬레이터 v6</h1>
     </div>
 
     <div class="layout">
-        <div class="card">
-            <div class="card-title">변수 설정 및 구성 항목</div>
-            
-            <div class="preset-wrapper">
-                <div class="section-subtitle" style="color: var(--accent-color); margin-bottom: 10px;">💾 프리셋 및 파일 백업 관리</div>
-                <div class="preset-grid">
-                    <button class="btn-action" onclick="saveAsCustomDefault()" style="background-color: #059669;">현재 값을 내 기본값으로 저장</button>
-                    <button class="btn-action" id="btn-load-custom" onclick="loadCustomDefault()" style="background-color: #2563eb;">내 기본값 불러오기</button>
+        <div>
+            <div class="github-wrapper">
+                <div class="section-subtitle" style="color: var(--git-color); margin-bottom: 12px;">☁️ 클라우드 동기화 (PIN 보안)</div>
+                
+                <div class="pin-box">
+                    <label style="font-weight: bold; color: #fff;">보안 PIN :</label>
+                    <input type="password" id="user-pin" class="pin-input" maxlength="4" placeholder="****">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">클라우드 통신을 위한 4자리 비밀번호</span>
                 </div>
-                <div class="preset-grid">
-                    <button class="btn-action" onclick="exportConfig()" style="background-color: #4b5563;">설정 파일 내보내기 (JSON)</button>
-                    <button class="btn-action" onclick="importConfig()" style="background-color: #4b5563;">설정 파일 가져오기 (JSON)</button>
+
+                <div class="flex-row">
+                    <input type="text" id="preset-save-name" placeholder="저장할 프리셋 이름 (예: 26년 5월)">
+                    <button class="btn-git" onclick="saveToCloud()" style="width: 100px;">저장하기</button>
                 </div>
+
+                <div class="flex-row">
+                    <select id="preset-load-select"><option value="">목록을 조회해주세요 (우측 버튼)</option></select>
+                    <button class="btn-git" onclick="fetchCloudList()" style="width: 60px; background-color: #4b5563;">조회</button>
+                    <button class="btn-git" onclick="loadFromCloud()" style="width: 100px; background-color: #2563eb;">불러오기</button>
+                </div>
+                <div id="git-status" class="status-msg"></div>
+
+                <details class="setup-tool">
+                    <summary>🛠️ [최초 1회 관리자 셋업] 토큰 암호화 코드 생성기</summary>
+                    <div class="setup-grid">
+                        <input type="text" id="raw-token" placeholder="진짜 GitHub 토큰 (ghp_...)">
+                        <input type="text" id="setup-pin" placeholder="설정할 4자리 PIN" maxlength="4">
+                        <button class="btn-git" onclick="generateCipher()" style="background-color: #059669;">암호화 코드 생성</button>
+                        <input type="text" id="cipher-result" placeholder="이곳에 생성된 코드를 복사해서 소스에 붙여넣으세요" readonly>
+                    </div>
+                </details>
             </div>
 
-            <div id="dynamic-inputs-container"></div>
+            <div class="card">
+                <div class="card-title">변수 설정 및 구성 항목</div>
+                <div id="dynamic-inputs-container"></div>
+            </div>
         </div>
 
         <div>
@@ -319,11 +129,7 @@
                 <div class="card-title">가계 자산 배분 실시간 결과 흐름</div>
                 <table>
                     <thead>
-                        <tr>
-                            <th style="width: 50%;">예산 항목 내역</th>
-                            <th style="width: 25%; text-align: right;">할당 금액</th>
-                            <th style="width: 25%; text-align: right;">정산 누적 잔액</th>
-                        </tr>
+                        <tr><th style="width: 50%;">예산 항목 내역</th><th style="width: 25%; text-align: right;">할당 금액</th><th style="width: 25%; text-align: right;">정산 누적 잔액</th></tr>
                     </thead>
                     <tbody id="result-tbody"></tbody>
                 </table>
@@ -333,260 +139,199 @@
 </div>
 
 <script>
-    // 최초 시스템 기본 뼈대 데이터셋
-    const systemDefaultData = {
-        income: {
-            title: "1. 소득 및 기초 각출 설정",
-            canAdd: false,
-            items: [
-                { id: "h_salary", name: "남편 월급", value: 5000000, isCore: true },
-                { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
-                { id: "h_base", name: "남편 기초 각출", value: 4300000, isCore: true },
-                { id: "w_base", name: "아내 기초 각출", value: 4000000, isCore: true },
-                { id: "extra_ratio", name: "잔액 각출 비율 (%)", value: 50, isCore: true, isPercent: true }
-            ]
-        },
-        expenses: {
-            title: "2. 대출 및 고정 지출",
-            canAdd: true,
-            items: [
-                { id: "loan_h", name: "의현 주담대", value: 2520000 },
-                { id: "loan_w", name: "원영 이자", value: 240000 },
-                { id: "congrat", name: "경조사비", value: 200000 },
-                { id: "manage", name: "관리비 상정액", value: 320000 },
-                { id: "saving_m", name: "장모님용 적금", value: 300000 }
-            ]
-        },
-        subscriptions: {
-            title: "3. 각종 월 구독료 고정 지출",
-            canAdd: true,
-            items: [
-                { id: "sub_tv", name: "TV/인터넷", value: 40980 },
-                { id: "sub_gemini", name: "제미나이 AI", value: 29000 },
-                { id: "sub_youtube", name: "유튜브 프리미엄", value: 11000 },
-                { id: "sub_naver", name: "네이버 플러스(넷플릭스)", value: 4900 },
-                { id: "sub_coupang", name: "쿠팡 와우", value: 7890 }
-            ]
-        },
-        variable: {
-            title: "4. 공금 및 활동 변동 지출",
-            canAdd: true,
-            items: [
-                { id: "public_fee", name: "공금 비용", value: 700000 },
-                { id: "pouch_w", name: "원영 용돈", value: 600000 },
-                { id: "pouch_h", name: "의현 용돈", value: 500000 },
-                { id: "travel", name: "여행비 (장기 전용)", value: 500000 }
-            ]
-        },
-        future: {
-            title: "5. 미래 자산 및 연간 예비비",
-            canAdd: true,
-            items: [
-                { id: "add_loan", name: "대출 추가 상환", value: 1000000 },
-                { id: "invest", name: "투자 재원", value: 1000000 },
-                { id: "parking_annual", name: "파킹 기본 (명절/세금 등)", value: 200000 }
-            ]
-        }
-    };
+    /* ====================================================================
+       🔒 [중요] 초기 설정 영역 (여기를 수정하고 GitHub에 커밋하세요)
+       ==================================================================== */
+    // 1. 사용할 레포지토리 이름 (예: Euihyun/budget-dashboard)
+    const GITHUB_REPO = "여기에_레포지토리_주소_입력"; 
+    
+    // 2. 화면의 [최초 1회 셋업]에서 생성한 암호화 문자열을 여기에 붙여넣으세요.
+    // (U2FsdGVkX1... 으로 시작하는 긴 문자열)
+    const ENCRYPTED_TOKEN = "여기에_생성된_암호화코드를_붙여넣으세요";
+    /* ==================================================================== */
 
     let state = {};
+    let cachedCloudPresets = {};
+
+    // 🌟 1. 암호화 도구 (UI 헬퍼)
+    function generateCipher() {
+        const raw = document.getElementById('raw-token').value.trim();
+        const pin = document.getElementById('setup-pin').value.trim();
+        if(!raw || !pin) return alert("토큰과 PIN을 모두 입력하세요.");
+        // 토큰을 PIN을 열쇠로 삼아 AES 암호화 수행
+        const cipher = CryptoJS.AES.encrypt(raw, pin).toString();
+        document.getElementById('cipher-result').value = cipher;
+        alert("생성 성공! 아래 결과값을 복사하여 소스 코드의 ENCRYPTED_TOKEN 에 붙여넣으세요.");
+    }
+
+    // 🌟 2. PIN 번호로 진짜 토큰 해독하기 (핵심 보안 로직)
+    function getDecryptedToken() {
+        const pin = document.getElementById('user-pin').value.trim();
+        if(pin.length < 4) throw new Error("4자리 PIN 번호를 입력해주세요.");
+        if(!ENCRYPTED_TOKEN || ENCRYPTED_TOKEN.includes("여기에_생성된")) throw new Error("소스 코드에 암호화된 토큰(ENCRYPTED_TOKEN)이 설정되지 않았습니다.");
+        
+        try {
+            // PIN을 열쇠로 복호화 수행
+            const bytes = CryptoJS.AES.decrypt(ENCRYPTED_TOKEN, pin);
+            const originalToken = bytes.toString(CryptoJS.enc.Utf8);
+            if (!originalToken || !originalToken.startsWith('ghp_')) throw new Error();
+            return originalToken;
+        } catch(e) {
+            throw new Error("❌ PIN 번호가 틀렸습니다. (복호화 실패)");
+        }
+    }
+
+    // 상태 메시지 출력 헬퍼
+    function setStatus(msg, isError = false) {
+        const el = document.getElementById('git-status');
+        el.textContent = msg; el.style.color = isError ? "var(--minus-color)" : "var(--accent-color)";
+        setTimeout(() => { el.textContent = ""; }, 4000);
+    }
+
+    // GitHub API 헤더 생성
+    async function getGitHubHeaders() {
+        const token = getDecryptedToken(); // 여기서 비밀번호 검증이 일어남
+        return { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' };
+    }
+
+    // Base64 인코딩/디코딩 (한글 깨짐 방지)
+    function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
+    function b64_to_utf8(str) { return decodeURIComponent(escape(window.atob(str))); }
+
+    // 🌟 3. 클라우드 조회 기능
+    async function fetchCloudList() {
+        try {
+            setStatus("인증 및 조회 중...");
+            const headers = await getGitHubHeaders();
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/presets.json`, { method: 'GET', headers });
+            
+            if (res.status === 404) return setStatus("저장된 프리셋이 아직 없습니다.");
+            if (!res.ok) throw new Error(`API 통신 에러: ${res.status}`);
+
+            const data = await res.json();
+            cachedCloudPresets = JSON.parse(b64_to_utf8(data.content));
+            
+            const select = document.getElementById('preset-load-select');
+            select.innerHTML = '<option value="">프리셋 선택...</option>';
+            Object.keys(cachedCloudPresets).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name; select.appendChild(opt);
+            });
+            setStatus("✅ 인증 성공! 목록을 불러왔습니다.");
+        } catch (err) { setStatus(err.message, true); }
+    }
+
+    // 🌟 4. 클라우드 저장 기능
+    async function saveToCloud() {
+        try {
+            const presetName = document.getElementById('preset-save-name').value.trim();
+            if (!presetName) throw new Error("저장할 프리셋 이름을 입력하세요.");
+            
+            setStatus(`"${presetName}" 저장 중...`);
+            const headers = await getGitHubHeaders();
+
+            let fileSha = null; let currentPresets = {};
+            const getRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/presets.json`, { method: 'GET', headers });
+            if (getRes.ok) {
+                const data = await getRes.json();
+                fileSha = data.sha; currentPresets = JSON.parse(b64_to_utf8(data.content));
+            }
+
+            currentPresets[presetName] = state; // 현재 상태 병합
+            const body = { message: `Save budget preset: ${presetName}`, content: utf8_to_b64(JSON.stringify(currentPresets, null, 2)) };
+            if (fileSha) body.sha = fileSha;
+
+            const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/presets.json`, { method: 'PUT', headers, body: JSON.stringify(body) });
+            if (!putRes.ok) throw new Error(`업데이트 실패: ${putRes.status}`);
+            
+            document.getElementById('preset-save-name').value = "";
+            setStatus("✅ 성공적으로 클라우드에 저장되었습니다!");
+            fetchCloudList(); 
+        } catch (err) { setStatus(err.message, true); }
+    }
+
+    // 🌟 5. 클라우드 불러오기 기능
+    function loadFromCloud() {
+        const selectedName = document.getElementById('preset-load-select').value;
+        if (!selectedName) return alert("불러올 프리셋을 선택해주세요.");
+        if (cachedCloudPresets[selectedName]) {
+            state = cachedCloudPresets[selectedName];
+            saveLocalState(); renderInputs(); calculate();
+            setStatus(`✅ "${selectedName}" 설정이 적용되었습니다.`);
+        }
+    }
+
+
+    /* ====================================================================
+       아래는 기존의 로컬 가계부 렌더링 및 계산 로직입니다 (v5와 동일)
+       ==================================================================== */
+    const systemDefaultData = {
+        income: { title: "1. 소득 및 기초 각출 설정", canAdd: false, items: [
+            { id: "h_salary", name: "남편 월급", value: 5000000, isCore: true }, { id: "w_salary", name: "아내 월급", value: 4500000, isCore: true },
+            { id: "h_base", name: "남편 기초 각출", value: 4300000, isCore: true }, { id: "w_base", name: "아내 기초 각출", value: 4000000, isCore: true },
+            { id: "extra_ratio", name: "잔액 각출 비율 (%)", value: 50, isCore: true, isPercent: true }
+        ]},
+        expenses: { title: "2. 대출 및 고정 지출", canAdd: true, items: [
+            { id: "loan_h", name: "의현 주담대", value: 2520000 }, { id: "loan_w", name: "원영 이자", value: 240000 },
+            { id: "congrat", name: "경조사비", value: 200000 }, { id: "manage", name: "관리비 상정액", value: 320000 }, { id: "saving_m", name: "장모님용 적금", value: 300000 }
+        ]},
+        subscriptions: { title: "3. 각종 월 구독료 고정 지출", canAdd: true, items: [
+            { id: "sub_tv", name: "TV/인터넷", value: 40980 }, { id: "sub_gemini", name: "제미나이 AI", value: 29000 },
+            { id: "sub_youtube", name: "유튜브 프리미엄", value: 11000 }, { id: "sub_naver", name: "네이버 플러스", value: 4900 }, { id: "sub_coupang", name: "쿠팡 와우", value: 7890 }
+        ]},
+        variable: { title: "4. 공금 및 활동 변동 지출", canAdd: true, items: [
+            { id: "public_fee", name: "공금 비용", value: 700000 }, { id: "pouch_w", name: "원영 용돈", value: 600000 },
+            { id: "pouch_h", name: "의현 용돈", value: 500000 }, { id: "travel", name: "여행비 (장기 전용)", value: 500000 }
+        ]},
+        future: { title: "5. 미래 자산 및 연간 예비비", canAdd: true, items: [
+            { id: "add_loan", name: "대출 추가 상환", value: 1000000 }, { id: "invest", name: "투자 재원", value: 1000000 }, { id: "parking_annual", name: "파킹 기본", value: 200000 }
+        ]}
+    };
 
     function init() {
-        // 캐싱된 마지막 상태값 로드
-        const saved = localStorage.getItem('couple_budget_state_v4');
-        if (saved) {
-            try { state = JSON.parse(saved); } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); }
-        } else {
-            // 커스텀 기본값이 있다면 로드, 없다면 시스템 기본값 로드
-            const customDefault = localStorage.getItem('couple_budget_custom_default');
-            if (customDefault) {
-                try { state = JSON.parse(customDefault); } catch(e) { state = JSON.parse(JSON.stringify(systemDefaultData)); }
-            } else {
-                state = JSON.parse(JSON.stringify(systemDefaultData));
-            }
-        }
-        checkCustomDefaultBtn();
-        renderInputs();
-        calculate();
+        const saved = localStorage.getItem('couple_budget_state_v6');
+        if (saved) { try { state = JSON.parse(saved); } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); } } 
+        else { state = JSON.parse(JSON.stringify(systemDefaultData)); }
+        renderInputs(); calculate();
     }
-
-    function saveState() {
-        localStorage.setItem('couple_budget_state_v4', JSON.stringify(state));
-    }
-
-    function saveAsCustomDefault() {
-        localStorage.setItem('couple_budget_custom_default', JSON.stringify(state));
-        alert("현재 화면의 세팅 구조와 수치들이 '나의 기본값'으로 지정되었습니다.\n이제 변경 중 언제든 복구할 수 있습니다.");
-        checkCustomDefaultBtn();
-    }
-
-    function loadCustomDefault() {
-        const saved = localStorage.getItem('couple_budget_custom_default');
-        if (saved) {
-            state = JSON.parse(saved);
-            saveState();
-            renderInputs();
-            calculate();
-            alert("지정하셨던 '나의 기본값' 세팅을 로드했습니다.");
-        } else {
-            alert("저장된 '나의 기본값'이 없습니다. 현재 세팅을 먼저 저장해주세요.");
-        }
-    }
-
-    function resetToSystemDefault() {
-        if(confirm("추가 항목을 포함하여 최초 이미지 기준 상태로 공장 초기화하시겠습니까?")) {
-            localStorage.removeItem('couple_budget_state_v4');
-            localStorage.removeItem('couple_budget_custom_default');
-            state = JSON.parse(JSON.stringify(systemDefaultData));
-            saveState();
-            checkCustomDefaultBtn();
-            renderInputs();
-            calculate();
-        }
-    }
-
-    function checkCustomDefaultBtn() {
-        const btn = document.getElementById('btn-load-custom');
-        if(localStorage.getItem('couple_budget_custom_default')) {
-            btn.style.opacity = "1";
-            btn.textContent = "내 기본값 불러오기 (활성)";
-        } else {
-            btn.style.opacity = "0.5";
-            btn.textContent = "내 기본값 불러오기 (없음)";
-        }
-    }
-
-    function exportConfig() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "couple_budget_config.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
-    function importConfig() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = e => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.readAsText(file, 'UTF-8');
-            reader.onload = readerEvent => {
-                try {
-                    const content = JSON.parse(readerEvent.target.result);
-                    if (content.income && content.expenses) {
-                        state = content;
-                        saveState();
-                        renderInputs();
-                        calculate();
-                        alert("설정 파일 백업본을 성공적으로 적용했습니다.");
-                    } else { alert("가계부 규칙에 맞는 형식이 아닙니다."); }
-                } catch (err) { alert("파일 로드 실패: JSON 구조를 확인하세요."); }
-            }
-        }
-        input.click();
-    }
-
-    function formatKRW(val) {
-        return "₩" + Math.abs(val).toLocaleString();
-    }
-
-    function addItem(catKey) {
-        const newId = "custom_" + Date.now();
-        state[catKey].items.push({ id: newId, name: "새 항목", value: 0 });
-        saveState();
-        renderInputs();
-        calculate();
-    }
-
-    function deleteItem(catKey, itemId) {
-        state[catKey].items = state[catKey].items.filter(i => i.id !== itemId);
-        saveState();
-        renderInputs();
-        calculate();
-    }
-
+    function saveLocalState() { localStorage.setItem('couple_budget_state_v6', JSON.stringify(state)); }
+    function formatKRW(val) { return "₩" + Math.abs(val).toLocaleString(); }
     function handleValueUpdate(catKey, itemId, element, isPercent) {
-        let raw = element.value.replace(/[^0-9]/g, '');
-        let num = parseInt(raw) || 0;
-        if (isPercent && num > 100) num = 100;
-
-        const start = element.selectionStart;
-        const oldLen = element.value.length;
+        let raw = element.value.replace(/[^0-9]/g, ''); let num = parseInt(raw) || 0; if (isPercent && num > 100) num = 100;
+        const start = element.selectionStart; const oldLen = element.value.length;
         element.value = isPercent ? num : num.toLocaleString();
-        const newLen = element.value.length;
-        
-        element.selectionStart = start + (newLen - oldLen);
-        element.selectionEnd = start + (newLen - oldLen);
-
-        const item = state[catKey].items.find(i => i.id === itemId);
-        if (item) item.value = num;
-        saveState();
-        calculate();
+        const newLen = element.value.length; element.selectionStart = start + (newLen - oldLen); element.selectionEnd = start + (newLen - oldLen);
+        const item = state[catKey].items.find(i => i.id === itemId); if (item) item.value = num;
+        saveLocalState(); calculate();
     }
-
     function handleNameUpdate(catKey, itemId, element) {
-        const item = state[catKey].items.find(i => i.id === itemId);
-        if (item) item.name = element.value;
-        saveState();
-        calculate();
+        const item = state[catKey].items.find(i => i.id === itemId); if (item) item.name = element.value;
+        saveLocalState(); calculate();
     }
+    function addItem(catKey) { state[catKey].items.push({ id: "custom_" + Date.now(), name: "새 항목", value: 0 }); saveLocalState(); renderInputs(); calculate(); }
+    function deleteItem(catKey, itemId) { state[catKey].items = state[catKey].items.filter(i => i.id !== itemId); saveLocalState(); renderInputs(); calculate(); }
 
     function renderInputs() {
-        const container = document.getElementById('dynamic-inputs-container');
-        container.innerHTML = "";
-
+        const container = document.getElementById('dynamic-inputs-container'); container.innerHTML = "";
         for (const [catKey, catData] of Object.entries(state)) {
-            const block = document.createElement('div');
-            block.className = "section-block";
-
-            const header = document.createElement('div');
-            header.className = "section-header";
+            const block = document.createElement('div'); block.className = "section-block";
+            const header = document.createElement('div'); header.className = "section-header";
             header.innerHTML = `<span class="section-subtitle">${catData.title}</span>`;
-            
             if (catData.canAdd) {
-                const addBtn = document.createElement('button');
-                addBtn.className = "btn-add";
-                addBtn.textContent = "+ 항목 추가";
-                addBtn.onclick = () => addItem(catKey);
-                header.appendChild(addBtn);
+                const addBtn = document.createElement('button'); addBtn.className = "btn-add"; addBtn.textContent = "+ 항목 추가";
+                addBtn.onclick = () => addItem(catKey); header.appendChild(addBtn);
             }
             block.appendChild(header);
-
             catData.items.forEach(item => {
-                const row = document.createElement('div');
-                row.className = "item-row";
-
-                const nameInput = document.createElement('input');
-                nameInput.type = "text";
-                nameInput.className = "item-name";
-                nameInput.value = item.name;
-                nameInput.disabled = item.isCore;
-                nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
-
-                const valInput = document.createElement('input');
-                valInput.type = "text";
-                valInput.className = "item-val";
-                valInput.value = item.isPercent ? item.value : item.value.toLocaleString();
-                valInput.oninput = () => handleValueUpdate(catKey, item.id, valInput, item.isPercent);
-
-                row.appendChild(nameInput);
-                row.appendChild(valInput);
-
+                const row = document.createElement('div'); row.className = "item-row";
+                const nameInput = document.createElement('input'); nameInput.type = "text"; nameInput.className = "item-name";
+                nameInput.value = item.name; nameInput.disabled = item.isCore; nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
+                const valInput = document.createElement('input'); valInput.type = "text"; valInput.className = "item-val";
+                valInput.value = item.isPercent ? item.value : item.value.toLocaleString(); valInput.oninput = () => handleValueUpdate(catKey, item.id, valInput, item.isPercent);
+                row.appendChild(nameInput); row.appendChild(valInput);
                 if (!item.isCore) {
-                    const delBtn = document.createElement('button');
-                    delBtn.className = "btn-del";
-                    delBtn.innerHTML = "✕";
-                    delBtn.onclick = () => deleteItem(catKey, item.id);
-                    row.appendChild(delBtn);
-                } else {
-                    const spacer = document.createElement('div');
-                    spacer.style.width = '28px';
-                    row.appendChild(spacer);
-                }
+                    const delBtn = document.createElement('button'); delBtn.className = "btn-del"; delBtn.innerHTML = "✕"; delBtn.onclick = () => deleteItem(catKey, item.id); row.appendChild(delBtn);
+                } else { const spacer = document.createElement('div'); spacer.style.width = '28px'; row.appendChild(spacer); }
                 block.appendChild(row);
             });
             container.appendChild(block);
@@ -594,75 +339,39 @@
     }
 
     function calculate() {
-        const getItemVal = (cat, id) => {
-            const target = state[cat].items.find(i => i.id === id);
-            return target ? target.value : 0;
-        };
-
-        const hSalary = getItemVal('income', 'h_salary');
-        const wSalary = getItemVal('income', 'w_salary');
-        const hBase = getItemVal('income', 'h_base');
-        const wBase = getItemVal('income', 'w_base');
+        const getItemVal = (cat, id) => { const target = state[cat].items.find(i => i.id === id); return target ? target.value : 0; };
+        const hBase = getItemVal('income', 'h_base'); const wBase = getItemVal('income', 'w_base');
         const extraRatio = getItemVal('income', 'extra_ratio') / 100;
-
         const totalBaseResource = hBase + wBase;
-        const hExtra = Math.max(0, hSalary - hBase) * extraRatio;
-        const wExtra = Math.max(0, wSalary - wBase) * extraRatio;
-        const totalExtraResource = hExtra + wExtra;
-        const totalResource = totalBaseResource + totalExtraResource;
+        const hExtra = Math.max(0, getItemVal('income', 'h_salary') - hBase) * extraRatio;
+        const wExtra = Math.max(0, getItemVal('income', 'w_salary') - wBase) * extraRatio;
+        const totalExtraResource = hExtra + wExtra; const totalResource = totalBaseResource + totalExtraResource;
 
-        document.getElementById('sum-base-res').textContent = formatKRW(totalBaseResource);
-        document.getElementById('sum-total-res').textContent = formatKRW(totalResource);
-
-        let cumulative = 0;
-        const tbody = document.getElementById('result-tbody');
-        tbody.innerHTML = "";
-
+        document.getElementById('sum-base-res').textContent = formatKRW(totalBaseResource); document.getElementById('sum-total-res').textContent = formatKRW(totalResource);
+        let cumulative = 0; const tbody = document.getElementById('result-tbody'); tbody.innerHTML = "";
+        
         const initialFlows = [
-            { name: "일정 금액(월급) 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `남편 기초각출(${formatKRW(hBase)}) + 아내 기초각출(${formatKRW(wBase)})` },
-            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `남편 추가분(${formatKRW(hExtra)}) + 아내 추가분(${formatKRW(wExtra)}) [잔액의 ${extraRatio*100}%]` },
-            { name: "추가 각출금액 파킹 저축 분리", amt: -totalExtraResource, type: "minus", desc: "변동성 대비용 별도 바인딩 파킹" }
+            { name: "일정 금액 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `남편 기초(${formatKRW(hBase)}) + 아내 기초(${formatKRW(wBase)})` },
+            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `남편 추가(${formatKRW(hExtra)}) + 아내 추가(${formatKRW(wExtra)})` },
+            { name: "추가 각출금액 파킹 저축 분리", amt: -totalExtraResource, type: "minus", desc: "변동성 대비 별도 파킹" }
         ];
+        initialFlows.forEach(item => { cumulative += item.amt; appendTableRow(item.name, item.desc, item.amt, item.type, cumulative); });
 
-        initialFlows.forEach(item => {
-            cumulative += item.amt;
-            appendTableRow(item.name, item.desc, item.amt, item.type, cumulative);
-        });
-
-        const targetCategories = ['expenses', 'subscriptions', 'variable', 'future'];
-        targetCategories.forEach(catKey => {
+        ['expenses', 'subscriptions', 'variable', 'future'].forEach(catKey => {
             state[catKey].items.forEach(item => {
-                if (item.value > 0) {
-                    cumulative -= item.value;
-                    appendTableRow(item.name, state[catKey].title, -item.value, "minus", cumulative);
-                }
+                if (item.value > 0) { cumulative -= item.value; appendTableRow(item.name, state[catKey].title, -item.value, "minus", cumulative); }
             });
         });
 
-        const totalTr = document.createElement('tr');
-        totalTr.className = "total-row";
-        totalTr.innerHTML = `
-            <td><div><strong>최종 정산 잔액 (유동 예비비)</strong></div><div class="sub-text">모든 목적성 할당 후 가계 최종 가용 잔고</div></td>
-            <td></td>
-            <td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">${formatKRW(cumulative)}</td>
-        `;
+        const totalTr = document.createElement('tr'); totalTr.className = "total-row";
+        totalTr.innerHTML = `<td><div><strong>최종 정산 잔액 (유동 예비비)</strong></div></td><td></td><td class="amount" style="color: var(--accent-color); font-size: 1.05rem;">${formatKRW(cumulative)}</td>`;
         tbody.appendChild(totalTr);
     }
-
     function appendTableRow(name, desc, amt, type, cumulative) {
-        const tbody = document.getElementById('result-tbody');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>
-                <div><strong>${name}</strong></div>
-                <div class="sub-text">${desc}</div>
-            </td>
-            <td class="amount ${type}">${amt > 0 ? '+' : ''}${formatKRW(amt)}</td>
-            <td class="amount"><strong>${formatKRW(cumulative)}</strong></td>
-        `;
+        const tbody = document.getElementById('result-tbody'); const tr = document.createElement('tr');
+        tr.innerHTML = `<td><div><strong>${name}</strong></div><div class="sub-text">${desc}</div></td><td class="amount ${type}">${amt > 0 ? '+' : ''}${formatKRW(amt)}</td><td class="amount"><strong>${formatKRW(cumulative)}</strong></td>`;
         tbody.appendChild(tr);
     }
-
     window.onload = init;
 </script>
 </body>
