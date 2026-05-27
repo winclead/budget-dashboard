@@ -1,0 +1,150 @@
+{
+  "test1": {
+    "income": {
+      "title": "1. 소득 및 기초 각출 설정",
+      "canAdd": false,
+      "items": [
+        {
+          "id": "h_salary",
+          "name": "남편 월급",
+          "value": 4050000,
+          "isCore": true
+        },
+        {
+          "id": "w_salary",
+          "name": "아내 월급",
+          "value": 4350000,
+          "isCore": true
+        },
+        {
+          "id": "h_base",
+          "name": "남편 기초 각출",
+          "value": 4000000,
+          "isCore": true
+        },
+        {
+          "id": "w_base",
+          "name": "아내 기초 각출",
+          "value": 4300000,
+          "isCore": true
+        },
+        {
+          "id": "extra_ratio",
+          "name": "잔액 각출 비율 (%)",
+          "value": 50,
+          "isCore": true,
+          "isPercent": true
+        }
+      ]
+    },
+    "expenses": {
+      "title": "2. 대출 및 고정 지출",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "loan_h",
+          "name": "남편 대출상환",
+          "value": 2520000
+        },
+        {
+          "id": "loan_w",
+          "name": "아내 대출상환",
+          "value": 240000
+        },
+        {
+          "id": "congrat",
+          "name": "경조사비",
+          "value": 200000
+        },
+        {
+          "id": "manage",
+          "name": "관리비",
+          "value": 320000
+        },
+        {
+          "id": "saving_m",
+          "name": "아내 적금",
+          "value": 300000
+        }
+      ]
+    },
+    "subscriptions": {
+      "title": "3. 각종 월 구독료 고정 지출",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "sub_tv",
+          "name": "TV/인터넷",
+          "value": 40980
+        },
+        {
+          "id": "sub_gemini",
+          "name": "제미나이 AI",
+          "value": 29000
+        },
+        {
+          "id": "sub_youtube",
+          "name": "유튜브 프리미엄",
+          "value": 11000
+        },
+        {
+          "id": "sub_naver",
+          "name": "네이버 플러스",
+          "value": 4900
+        },
+        {
+          "id": "sub_coupang",
+          "name": "쿠팡 와우",
+          "value": 7890
+        }
+      ]
+    },
+    "variable": {
+      "title": "4. 공금 및 활동 변동 지출",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "public_fee",
+          "name": "공금 비용",
+          "value": 700000
+        },
+        {
+          "id": "pouch_w",
+          "name": "아내 용돈",
+          "value": 600000
+        },
+        {
+          "id": "pouch_h",
+          "name": "남편 용돈",
+          "value": 500000
+        },
+        {
+          "id": "travel",
+          "name": "여행비 (장기 전용)",
+          "value": 500000
+        }
+      ]
+    },
+    "future": {
+      "title": "5. 미래 자산 및 연간 예비비",
+      "canAdd": true,
+      "items": [
+        {
+          "id": "add_loan",
+          "name": "대출 추가 상환",
+          "value": 1000000
+        },
+        {
+          "id": "invest",
+          "name": "투자 재원",
+          "value": 1000000
+        },
+        {
+          "id": "parking_annual",
+          "name": "파킹 기본",
+          "value": 200000
+        }
+      ]
+    }
+  }
+}
