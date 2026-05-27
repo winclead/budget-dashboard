@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부부 자산 관리 시뮬레이터 v3</title>
+    <title>부부 자산 관리 시뮬레이터 v4</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -48,7 +48,7 @@
         }
 
         .btn-reset {
-            background-color: #475569;
+            background-color: #e11d48;
             color: #fff;
             border: none;
             padding: 8px 16px;
@@ -60,7 +60,7 @@
         }
 
         .btn-reset:hover {
-            background-color: #334155;
+            background-color: #be123c;
         }
 
         .layout {
@@ -71,7 +71,7 @@
 
         @media (min-width: 1024px) {
             .layout {
-                grid-template-columns: 500px 1fr;
+                grid-template-columns: 520px 1fr;
             }
         }
 
@@ -122,7 +122,6 @@
         .btn-add {
             background: transparent;
             color: var(--plus-color);
-            border: 1px inline var(--plus-color);
             border: 1px solid var(--plus-color);
             padding: 4px 8px;
             border-radius: 4px;
@@ -178,7 +177,6 @@
             transform: scale(1.2);
         }
 
-        /* 대시보드 요약 스타일 */
         .summary-box {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -245,19 +243,63 @@
         .total-row td {
             border-bottom: 2px solid var(--primary-color);
         }
+
+        /* 프리셋 대시보드 컴포넌트 */
+        .preset-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed var(--border-color);
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .preset-grid:last-child {
+            margin-bottom: 0;
+        }
+        .btn-action {
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #fff;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-area">
-        <h1>부부 자산 관리 시뮬레이터 v3</h1>
-        <button class="btn-reset" onclick="resetToDefault()">초기 설정으로 리셋</button>
+        <h1>부부 자산 관리 시뮬레이터 v4</h1>
+        <button class="btn-reset" onclick="resetToSystemDefault()">공장 초기화 (최초 이미지 기준)</button>
     </div>
 
     <div class="layout">
         <div class="card">
             <div class="card-title">변수 설정 및 구성 항목</div>
+            
+            <div class="preset-wrapper">
+                <div class="section-subtitle" style="color: var(--accent-color); margin-bottom: 10px;">💾 프리셋 및 파일 백업 관리</div>
+                <div class="preset-grid">
+                    <button class="btn-action" onclick="saveAsCustomDefault()" style="background-color: #059669;">현재 값을 내 기본값으로 저장</button>
+                    <button class="btn-action" id="btn-load-custom" onclick="loadCustomDefault()" style="background-color: #2563eb;">내 기본값 불러오기</button>
+                </div>
+                <div class="preset-grid">
+                    <button class="btn-action" onclick="exportConfig()" style="background-color: #4b5563;">설정 파일 내보내기 (JSON)</button>
+                    <button class="btn-action" onclick="importConfig()" style="background-color: #4b5563;">설정 파일 가져오기 (JSON)</button>
+                </div>
+            </div>
+
             <div id="dynamic-inputs-container"></div>
         </div>
 
@@ -291,8 +333,8 @@
 </div>
 
 <script>
-    // 최초 기본 데이터셋 정의
-    const defaultData = {
+    // 최초 시스템 기본 뼈대 데이터셋
+    const systemDefaultData = {
         income: {
             title: "1. 소득 및 기초 각출 설정",
             canAdd: false,
@@ -349,51 +391,117 @@
 
     let state = {};
 
-    // 로컬 스토리지에서 상태 로드 또는 초기화
     function init() {
-        const saved = localStorage.getItem('couple_budget_state_v3');
+        // 캐싱된 마지막 상태값 로드
+        const saved = localStorage.getItem('couple_budget_state_v4');
         if (saved) {
-            try {
-                state = JSON.parse(saved);
-            } catch (e) {
-                state = JSON.parse(JSON.stringify(defaultData));
-            }
+            try { state = JSON.parse(saved); } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); }
         } else {
-            state = JSON.parse(JSON.stringify(defaultData));
+            // 커스텀 기본값이 있다면 로드, 없다면 시스템 기본값 로드
+            const customDefault = localStorage.getItem('couple_budget_custom_default');
+            if (customDefault) {
+                try { state = JSON.parse(customDefault); } catch(e) { state = JSON.parse(JSON.stringify(systemDefaultData)); }
+            } else {
+                state = JSON.parse(JSON.stringify(systemDefaultData));
+            }
         }
+        checkCustomDefaultBtn();
         renderInputs();
         calculate();
     }
 
     function saveState() {
-        localStorage.setItem('couple_budget_state_v3', JSON.stringify(state));
+        localStorage.setItem('couple_budget_state_v4', JSON.stringify(state));
     }
 
-    function resetToDefault() {
-        if(confirm("모든 세팅과 추가된 항목을 초기 데이터로 리셋하시겠습니까?")) {
-            localStorage.removeItem('couple_budget_state_v3');
-            init();
+    function saveAsCustomDefault() {
+        localStorage.setItem('couple_budget_custom_default', JSON.stringify(state));
+        alert("현재 화면의 세팅 구조와 수치들이 '나의 기본값'으로 지정되었습니다.\n이제 변경 중 언제든 복구할 수 있습니다.");
+        checkCustomDefaultBtn();
+    }
+
+    function loadCustomDefault() {
+        const saved = localStorage.getItem('couple_budget_custom_default');
+        if (saved) {
+            state = JSON.parse(saved);
+            saveState();
+            renderInputs();
+            calculate();
+            alert("지정하셨던 '나의 기본값' 세팅을 로드했습니다.");
+        } else {
+            alert("저장된 '나의 기본값'이 없습니다. 현재 세팅을 먼저 저장해주세요.");
         }
+    }
+
+    function resetToSystemDefault() {
+        if(confirm("추가 항목을 포함하여 최초 이미지 기준 상태로 공장 초기화하시겠습니까?")) {
+            localStorage.removeItem('couple_budget_state_v4');
+            localStorage.removeItem('couple_budget_custom_default');
+            state = JSON.parse(JSON.stringify(systemDefaultData));
+            saveState();
+            checkCustomDefaultBtn();
+            renderInputs();
+            calculate();
+        }
+    }
+
+    function checkCustomDefaultBtn() {
+        const btn = document.getElementById('btn-load-custom');
+        if(localStorage.getItem('couple_budget_custom_default')) {
+            btn.style.opacity = "1";
+            btn.textContent = "내 기본값 불러오기 (활성)";
+        } else {
+            btn.style.opacity = "0.5";
+            btn.textContent = "내 기본값 불러오기 (없음)";
+        }
+    }
+
+    function exportConfig() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "couple_budget_config.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importConfig() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = readerEvent => {
+                try {
+                    const content = JSON.parse(readerEvent.target.result);
+                    if (content.income && content.expenses) {
+                        state = content;
+                        saveState();
+                        renderInputs();
+                        calculate();
+                        alert("설정 파일 백업본을 성공적으로 적용했습니다.");
+                    } else { alert("가계부 규칙에 맞는 형식이 아닙니다."); }
+                } catch (err) { alert("파일 로드 실패: JSON 구조를 확인하세요."); }
+            }
+        }
+        input.click();
     }
 
     function formatKRW(val) {
         return "₩" + Math.abs(val).toLocaleString();
     }
 
-    // 항목 추가 기능
     function addItem(catKey) {
         const newId = "custom_" + Date.now();
-        state[catKey].items.push({
-            id: newId,
-            name: "새로운 항목",
-            value: 0
-        });
+        state[catKey].items.push({ id: newId, name: "새 항목", value: 0 });
         saveState();
         renderInputs();
         calculate();
     }
 
-    // 항목 삭제 기능
     function deleteItem(catKey, itemId) {
         state[catKey].items = state[catKey].items.filter(i => i.id !== itemId);
         saveState();
@@ -401,31 +509,25 @@
         calculate();
     }
 
-    // 인풋 필드 값 핸들링 (천단위 실시간 콤마 포맷팅 유지 로직)
     function handleValueUpdate(catKey, itemId, element, isPercent) {
         let raw = element.value.replace(/[^0-9]/g, '');
         let num = parseInt(raw) || 0;
-
         if (isPercent && num > 100) num = 100;
 
-        // 안드로이드 환경 입력 편의를 위해 마스크 위치 추적 구문 적용
         const start = element.selectionStart;
         const oldLen = element.value.length;
-
         element.value = isPercent ? num : num.toLocaleString();
-
         const newLen = element.value.length;
+        
         element.selectionStart = start + (newLen - oldLen);
         element.selectionEnd = start + (newLen - oldLen);
 
-        // 상태 저장
         const item = state[catKey].items.find(i => i.id === itemId);
         if (item) item.value = num;
         saveState();
         calculate();
     }
 
-    // 항목 이름 변경 핸들링
     function handleNameUpdate(catKey, itemId, element) {
         const item = state[catKey].items.find(i => i.id === itemId);
         if (item) item.name = element.value;
@@ -433,7 +535,6 @@
         calculate();
     }
 
-    // 왼쪽 설정 영역 동적 HTML 렌더링
     function renderInputs() {
         const container = document.getElementById('dynamic-inputs-container');
         container.innerHTML = "";
@@ -442,7 +543,6 @@
             const block = document.createElement('div');
             block.className = "section-block";
 
-            // 섹션 헤더 구성
             const header = document.createElement('div');
             header.className = "section-header";
             header.innerHTML = `<span class="section-subtitle">${catData.title}</span>`;
@@ -456,20 +556,17 @@
             }
             block.appendChild(header);
 
-            // 각 항목 인풋 필드 구성
             catData.items.forEach(item => {
                 const row = document.createElement('div');
                 row.className = "item-row";
 
-                // 이름 인풋창
                 const nameInput = document.createElement('input');
                 nameInput.type = "text";
                 nameInput.className = "item-name";
                 nameInput.value = item.name;
-                nameInput.disabled = item.isCore; // 고정 필수조건은 이름 수정 불가
+                nameInput.disabled = item.isCore;
                 nameInput.oninput = () => handleNameUpdate(catKey, item.id, nameInput);
 
-                // 금액 인풋창
                 const valInput = document.createElement('input');
                 valInput.type = "text";
                 valInput.className = "item-val";
@@ -479,7 +576,6 @@
                 row.appendChild(nameInput);
                 row.appendChild(valInput);
 
-                // 삭제 버튼 (추가된 커스텀 요소들만 작동)
                 if (!item.isCore) {
                     const delBtn = document.createElement('button');
                     delBtn.className = "btn-del";
@@ -487,34 +583,28 @@
                     delBtn.onclick = () => deleteItem(catKey, item.id);
                     row.appendChild(delBtn);
                 } else {
-                    // 간격 균형 유지를 위한 더미 스페이서
                     const spacer = document.createElement('div');
                     spacer.style.width = '28px';
                     row.appendChild(spacer);
                 }
-
                 block.appendChild(row);
             });
-
             container.appendChild(block);
         }
     }
 
-    // 메인 연산 및 결과 테이블 동적 갱신
     function calculate() {
         const getItemVal = (cat, id) => {
             const target = state[cat].items.find(i => i.id === id);
             return target ? target.value : 0;
         };
 
-        // 1. 소득 구조 파싱
         const hSalary = getItemVal('income', 'h_salary');
         const wSalary = getItemVal('income', 'w_salary');
         const hBase = getItemVal('income', 'h_base');
         const wBase = getItemVal('income', 'w_base');
         const extraRatio = getItemVal('income', 'extra_ratio') / 100;
 
-        // 2. 가계 기초 및 추가 재원 도출 가동
         const totalBaseResource = hBase + wBase;
         const hExtra = Math.max(0, hSalary - hBase) * extraRatio;
         const wExtra = Math.max(0, wSalary - wBase) * extraRatio;
@@ -524,12 +614,10 @@
         document.getElementById('sum-base-res').textContent = formatKRW(totalBaseResource);
         document.getElementById('sum-total-res').textContent = formatKRW(totalResource);
 
-        // 3. 자산 흐름 어레이 빌딩
         let cumulative = 0;
         const tbody = document.getElementById('result-tbody');
         tbody.innerHTML = "";
 
-        // 재원 적립 라인 출력
         const initialFlows = [
             { name: "일정 금액(월급) 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `남편 기초각출(${formatKRW(hBase)}) + 아내 기초각출(${formatKRW(wBase)})` },
             { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `남편 추가분(${formatKRW(hExtra)}) + 아내 추가분(${formatKRW(wExtra)}) [잔액의 ${extraRatio*100}%]` },
@@ -541,12 +629,8 @@
             appendTableRow(item.name, item.desc, item.amt, item.type, cumulative);
         });
 
-        // 4. 나머지 모든 유저 커스텀 세부 지출 항목 차감 순회 연산
         const targetCategories = ['expenses', 'subscriptions', 'variable', 'future'];
-        
         targetCategories.forEach(catKey => {
-            let catSum = 0;
-            // 카테고리별 개별 항목 매핑 차감
             state[catKey].items.forEach(item => {
                 if (item.value > 0) {
                     cumulative -= item.value;
@@ -555,7 +639,6 @@
             });
         });
 
-        // 최종 예비비 정산 로우 마감
         const totalTr = document.createElement('tr');
         totalTr.className = "total-row";
         totalTr.innerHTML = `
@@ -566,7 +649,6 @@
         tbody.appendChild(totalTr);
     }
 
-    // 결과 테이블 도우미 함수
     function appendTableRow(name, desc, amt, type, cumulative) {
         const tbody = document.getElementById('result-tbody');
         const tr = document.createElement('tr');
@@ -581,9 +663,7 @@
         tbody.appendChild(tr);
     }
 
-    // 초기 구동 브라우저 바인딩
     window.onload = init;
 </script>
-
 </body>
 </html>
