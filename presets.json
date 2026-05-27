@@ -1,5 +1,5 @@
 {
-  "1안(400/420)": {
+  "2안(425/470)": {
     "income": {
       "title": "1. 소득 및 기초 각출 설정",
       "canAdd": false,
@@ -7,25 +7,25 @@
         {
           "id": "h_salary",
           "name": "남편 월급",
-          "value": 4250000,
+          "value": 4000000,
           "isCore": true
         },
         {
           "id": "w_salary",
           "name": "아내 월급",
-          "value": 4800000,
+          "value": 4200000,
           "isCore": true
         },
         {
           "id": "h_base",
           "name": "남편 기초 각출",
-          "value": 4200000,
+          "value": 4000000,
           "isCore": true
         },
         {
           "id": "w_base",
           "name": "아내 기초 각출",
-          "value": 4700000,
+          "value": 4200000,
           "isCore": true
         },
         {
@@ -147,7 +147,7 @@
       ]
     }
   },
-  "2안(425/470)": {
+  "1안(400/420)": {
     "income": {
       "title": "1. 소득 및 기초 각출 설정",
       "canAdd": false,
@@ -155,25 +155,25 @@
         {
           "id": "h_salary",
           "name": "남편 월급",
-          "value": 4250000,
+          "value": 4000000,
           "isCore": true
         },
         {
           "id": "w_salary",
           "name": "아내 월급",
-          "value": 4800000,
+          "value": 4200000,
           "isCore": true
         },
         {
           "id": "h_base",
           "name": "남편 기초 각출",
-          "value": 4200000,
+          "value": 4000000,
           "isCore": true
         },
         {
           "id": "w_base",
           "name": "아내 기초 각출",
-          "value": 4700000,
+          "value": 4200000,
           "isCore": true
         },
         {
