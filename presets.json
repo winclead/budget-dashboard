@@ -155,13 +155,13 @@
         {
           "id": "h_salary",
           "name": "남편 월급",
-          "value": 4300000,
+          "value": 4000000,
           "isCore": true
         },
         {
           "id": "w_salary",
           "name": "아내 월급",
-          "value": 4800000,
+          "value": 4200000,
           "isCore": true
         },
         {
