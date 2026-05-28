@@ -7,13 +7,13 @@
         {
           "id": "h_salary",
           "name": "남편 월급",
-          "value": 4250000,
+          "value": 4350000,
           "isCore": true
         },
         {
           "id": "w_salary",
           "name": "아내 월급",
-          "value": 4700000,
+          "value": 4900000,
           "isCore": true
         },
         {
@@ -31,7 +31,7 @@
         {
           "id": "extra_ratio",
           "name": "잔액 각출 비율 (%)",
-          "value": 50,
+          "value": 0,
           "isCore": true,
           "isPercent": true
         }
@@ -122,6 +122,31 @@
           "id": "sub_coupang",
           "name": "쿠팡 와우",
           "value": 7890
+        },
+        {
+          "id": "custom_1779978296638",
+          "name": "기아 네비",
+          "value": 5500
+        },
+        {
+          "id": "custom_1779978306116",
+          "name": "배달의 민족",
+          "value": 1990
+        },
+        {
+          "id": "custom_1779978313385",
+          "name": "암 보험",
+          "value": 82767
+        },
+        {
+          "id": "custom_1779978327115",
+          "name": "운전자 보험",
+          "value": 14950
+        },
+        {
+          "id": "custom_1779978334729",
+          "name": "애플",
+          "value": 3300
         }
       ]
     },
