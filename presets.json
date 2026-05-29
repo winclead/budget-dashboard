@@ -475,8 +475,8 @@
   },
   "test": {
     "bonus": {
-      "annual_h": 0,
-      "annual_w": 0,
+      "annual_h": 123123,
+      "annual_w": 1231231,
       "list_h": [],
       "list_w": [],
       "baseType": "post",
