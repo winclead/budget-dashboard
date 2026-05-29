@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부부 자산 관리 시뮬레이터 v8.3 (Bonus Edition)</title>
+    <title>부부 자산 관리 시뮬레이터 v8.4 (Bonus Edition)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
@@ -64,7 +64,6 @@
         .btn-update { background-color: var(--accent-color); }
         .status-msg { font-size: 0.85rem; margin-top: 8px; color: var(--accent-color); font-weight: 500; }
 
-        /* 보너스 카드 특화 스타일 */
         .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .bonus-input-group { display: flex; flex-direction: column; gap: 6px; }
         .bonus-input-group label { font-size: 0.85rem; color: var(--text-muted); }
@@ -74,7 +73,7 @@
 
 <div class="container">
     <div class="header-area">
-        <h1>부부 자산 관리 시뮬레이터 v8.3</h1>
+        <h1>부부 자산 관리 시뮬레이터 v8.4</h1>
     </div>
 
     <div class="layout">
@@ -114,22 +113,22 @@
                 
                 <div class="bonus-grid">
                     <div class="bonus-input-group">
-                        <label>의현 세전 보너스</label>
+                        <label>남편 세전 보너스</label>
                         <input type="text" id="bonus-h-pre" style="text-align: right;" oninput="handleBonusInput(this, 'h_pre')">
                     </div>
                     <div class="bonus-input-group">
-                        <label>의현 세후 (실수령)</label>
+                        <label>남편 세후 (실수령)</label>
                         <input type="text" id="bonus-h-post" style="text-align: right;" oninput="handleBonusInput(this, 'h_post')">
                     </div>
                 </div>
                 
                 <div class="bonus-grid">
                     <div class="bonus-input-group">
-                        <label>원영 세전 보너스</label>
+                        <label>아내 세전 보너스</label>
                         <input type="text" id="bonus-w-pre" style="text-align: right;" oninput="handleBonusInput(this, 'w_pre')">
                     </div>
                     <div class="bonus-input-group">
-                        <label>원영 세후 (실수령)</label>
+                        <label>아내 세후 (실수령)</label>
                         <input type="text" id="bonus-w-post" style="text-align: right;" oninput="handleBonusInput(this, 'w_post')">
                     </div>
                 </div>
@@ -144,21 +143,21 @@
                             </select>
                         </div>
                         <div class="bonus-input-group">
-                            <label>의현 용돈 비율 (%)</label>
+                            <label>남편 용돈 비율 (%)</label>
                             <input type="text" id="bonus-h-pct" style="text-align: right;" oninput="handleBonusInput(this, 'h_percent', true)">
                         </div>
                     </div>
                     
                     <div class="bonus-grid">
                         <div class="bonus-input-group">
-                            <label>원영 몫 산출 방식</label>
+                            <label>아내 몫 산출 방식</label>
                             <select id="bonus-wife-method" onchange="handleBonusSelect('wifeMethod', this.value)">
                                 <option value="proportional">남편 용돈액 × (세전 보너스 비례)</option>
-                                <option value="independent">원영 개별 비율 (%) 지정</option>
+                                <option value="independent">아내 개별 비율 (%) 지정</option>
                             </select>
                         </div>
                         <div class="bonus-input-group">
-                            <label>원영 용돈 비율 (%)</label>
+                            <label>아내 용돈 비율 (%)</label>
                             <input type="text" id="bonus-w-pct" style="text-align: right;" oninput="handleBonusInput(this, 'w_percent', true)">
                         </div>
                     </div>
@@ -174,11 +173,11 @@
         <div>
             <div class="summary-box" style="margin-bottom: 12px;">
                 <div class="summary-card" style="border-color: var(--bonus-color); background: rgba(168,85,247,0.05);">
-                    <div class="label">의현 보너스 용돈</div>
+                    <div class="label">남편 보너스 용돈</div>
                     <div class="value" id="dash-bonus-h" style="color: var(--bonus-color);">₩0</div>
                 </div>
                 <div class="summary-card" style="border-color: var(--bonus-color); background: rgba(168,85,247,0.05);">
-                    <div class="label">원영 보너스 용돈</div>
+                    <div class="label">아내 보너스 용돈</div>
                     <div class="value" id="dash-bonus-w" style="color: var(--bonus-color);">₩0</div>
                 </div>
                 <div class="summary-card" style="border-color: #3b82f6; background: rgba(59,130,246,0.05);">
@@ -243,9 +242,6 @@
     let cachedCloudPresets = {};
     let currentLoadedPreset = "";
 
-    /* ====================================================================
-       보너스 상태 관리 로직 포함 시스템 디폴트
-       ==================================================================== */
     const systemDefaultData = {
         bonus: {
             h_pre: 10000000, h_post: 8000000, w_pre: 8000000, w_post: 6500000,
@@ -272,7 +268,7 @@
         ]},
         variable: { title: "5. 공금 및 부부 용돈", canAdd: true, items: [
             { id: "public_fee", name: "공금 비용", value: 700000 }, 
-            { id: "pouch_w", name: "원영 공금 용돈", value: 600000 }, { id: "pouch_h", name: "의현 공금 용돈", value: 500000 }
+            { id: "pouch_w", name: "아내 공금 용돈", value: 600000 }, { id: "pouch_h", name: "남편 공금 용돈", value: 500000 }
         ]}
     };
 
@@ -282,7 +278,6 @@
             try { 
                 state = JSON.parse(saved); 
                 if(!state.income || !state.loan) throw new Error();
-                // v8.3 마이그레이션: 과거 프리셋에 보너스 객체가 없으면 채워넣기
                 if(!state.bonus) state.bonus = JSON.parse(JSON.stringify(systemDefaultData.bonus));
             } catch (e) { state = JSON.parse(JSON.stringify(systemDefaultData)); } 
         } else { state = JSON.parse(JSON.stringify(systemDefaultData)); }
@@ -293,7 +288,6 @@
     function saveLocalState() { localStorage.setItem('couple_budget_state_v8', JSON.stringify(state)); }
     function formatKRW(val) { return "₩" + Math.abs(val).toLocaleString(); }
 
-    /* 클라우드 인증 및 로직 */
     function getDecryptedToken() {
         const pin = document.getElementById('user-pin').value.trim();
         if(pin.length < 4) throw new Error("4자리 PIN 번호를 입력해주세요.");
@@ -367,7 +361,7 @@
         if (cachedCloudPresets[selectedName]) {
             currentLoadedPreset = selectedName;
             state = JSON.parse(JSON.stringify(cachedCloudPresets[selectedName]));
-            if(!state.bonus) state.bonus = JSON.parse(JSON.stringify(systemDefaultData.bonus)); // 하위호환
+            if(!state.bonus) state.bonus = JSON.parse(JSON.stringify(systemDefaultData.bonus));
             saveLocalState(); renderInputs(); syncBonusUI(); calculate();
             setStatus(`✅ "${selectedName}" 적용됨.`);
         }
@@ -395,9 +389,6 @@
         } catch (err) { setStatus(err.message, true); }
     }
 
-    /* ====================================================================
-       🌟 보너스 로직 및 렌더링
-       ==================================================================== */
     function syncBonusUI() {
         document.getElementById('bonus-h-pre').value = state.bonus.h_pre.toLocaleString();
         document.getElementById('bonus-h-post').value = state.bonus.h_post.toLocaleString();
@@ -408,7 +399,6 @@
         document.getElementById('bonus-h-pct').value = state.bonus.h_percent;
         document.getElementById('bonus-w-pct').value = state.bonus.w_percent;
         
-        // 아내 산출 방식이 비례일 경우 개별 퍼센트 입력창 비활성화
         document.getElementById('bonus-w-pct').disabled = (state.bonus.wifeMethod === 'proportional');
     }
 
@@ -427,7 +417,6 @@
         syncBonusUI(); saveLocalState(); calculate();
     }
 
-    /* 정기 변수 로직 */
     function handleValueUpdate(catKey, itemId, element, isPercent) {
         let raw = element.value.replace(/[^0-9]/g, ''); let num = parseInt(raw) || 0; if (isPercent && num > 100) num = 100;
         const start = element.selectionStart; const oldLen = element.value.length;
@@ -446,7 +435,7 @@
     function renderInputs() {
         const container = document.getElementById('dynamic-inputs-container'); container.innerHTML = "";
         for (const [catKey, catData] of Object.entries(state)) {
-            if(catKey === 'bonus') continue; // 보너스는 상단 고정 UI 사용
+            if(catKey === 'bonus') continue;
             
             const block = document.createElement('div'); block.className = "section-block";
             const header = document.createElement('div'); header.className = "section-header";
@@ -473,7 +462,6 @@
     }
 
     function calculate() {
-        /* 🌟 1. 보너스 정산 계산 로직 */
         const b = state.bonus;
         const hBaseAmt = (b.baseType === 'pre') ? b.h_pre : b.h_post;
         const hPouchBonus = Math.round(hBaseAmt * (b.h_percent / 100));
@@ -483,23 +471,18 @@
             const wBaseAmt = (b.baseType === 'pre') ? b.w_pre : b.w_post;
             wPouchBonus = Math.round(wBaseAmt * (b.w_percent / 100));
         } else {
-            // 남편 몫 × (아내 세전 / 남편 세전) 비율 산출
             const ratio = (b.h_pre > 0) ? (b.w_pre / b.h_pre) : 0;
             wPouchBonus = Math.round(hPouchBonus * ratio);
         }
 
-        // 가계 귀속 합산 보너스 = (남편 실수령 - 남편 몫) + (아내 실수령 - 아내 몫)
-        // 만약 세전 기준으로 떼서 실수령액을 초과할 경우 방어 로직 적용
         const hJoint = Math.max(0, b.h_post - hPouchBonus);
         const wJoint = Math.max(0, b.w_post - wPouchBonus);
         const totalJointBonus = hJoint + wJoint;
 
-        // 보너스 대시보드 렌더링
         document.getElementById('dash-bonus-h').textContent = formatKRW(hPouchBonus);
         document.getElementById('dash-bonus-w').textContent = formatKRW(wPouchBonus);
         document.getElementById('dash-bonus-joint').textContent = formatKRW(totalJointBonus);
 
-        /* 2. 월 정기 자산 계산 로직 (v8과 동일) */
         const getItemVal = (cat, id) => { const target = state[cat].items.find(i => i.id === id); return target ? target.value : 0; };
         
         const hSalary = getItemVal('income', 'h_salary'); const wSalary = getItemVal('income', 'w_salary');
@@ -539,8 +522,8 @@
 
         let cumulative = 0; const tbody = document.getElementById('result-tbody'); tbody.innerHTML = "";
         const initialFlows = [
-            { name: "일정 금액 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `의현 기초(${formatKRW(hBase)}) + 원영 기초(${formatKRW(wBase)})` },
-            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `의현 추가(${formatKRW(hExtraToJoint)}) + 원영 추가(${formatKRW(wExtraToJoint)})` }
+            { name: "일정 금액 기준 기초 공동비 재원 조성", amt: totalBaseResource, type: "plus", desc: `남편 기초(${formatKRW(hBase)}) + 아내 기초(${formatKRW(wBase)})` },
+            { name: "각출 외 잔액 기준 추가 공동비 적립", amt: totalExtraResource, type: "plus", desc: `남편 추가(${formatKRW(hExtraToJoint)}) + 아내 추가(${formatKRW(wExtraToJoint)})` }
         ];
         initialFlows.forEach(item => { cumulative += item.amt; appendTableRow(item.name, item.desc, item.amt, item.type, cumulative); });
 
