@@ -641,16 +641,8 @@
           "name": "OPI",
           "type": "percent",
           "percentVal": 50,
-          "preVal": 0,
-          "postVal": 0
-        },
-        {
-          "id": "b_1780040937178",
-          "name": "DS특별성과금",
-          "type": "percent",
-          "percentVal": 0,
-          "preVal": 0,
-          "postVal": 0
+          "preVal": 75,
+          "postVal": 26000000
         }
       ],
       "list_w": [
@@ -660,20 +652,12 @@
           "type": "percent",
           "percentVal": 50,
           "preVal": 0,
-          "postVal": 0
-        },
-        {
-          "id": "b_1780040937810",
-          "name": "DS특별성과금",
-          "type": "percent",
-          "percentVal": 0,
-          "preVal": 0,
-          "postVal": 0
+          "postVal": 27000000
         }
       ],
       "baseType": "post",
       "wifeMethod": "proportional",
-      "h_percent": 20,
+      "h_percent": 10,
       "w_percent": 20
     },
     "income": {
